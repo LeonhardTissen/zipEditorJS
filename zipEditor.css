@@ -1,0 +1,82 @@
+:root {
+	--zedMain: #aaa;
+	--zedDark: #ddd;
+	--zedDarker: #ccc;
+	--zedDarkest: #bbb;
+	--zedFont: #000;
+	--zedDanger: #f00;
+}
+@font-face {
+	font-family: "Montserrat";
+	src: url("Montserrat-VF.woff2");
+	font-variation-settings: "wght" 600;
+}
+.ze {
+	width: 100vw;
+	height: 100vh;
+	background-color: var(--zedMain);
+	position: fixed;
+	top: 0;
+	left: 0;
+	transition: top 0.5s ease-out;
+}
+.ze * {
+	font-family: "Montserrat";
+	color: var(--zedFont);
+}
+.ze .topbar {
+	width: 100vw;
+	height: 50px;
+	background-color: var(--zedDarker);
+}
+.ze .topbar .button {
+	background-color: #0002;
+	height: 50px;
+	transition: background-color 0.2s ease-out;
+	cursor: pointer;
+	border: none;
+	font-size: 30px;
+}
+.ze .topbar .button:hover {
+	background-color: #0004;
+	height: 50px;
+	transition: background-color 0.2s ease-out;
+	cursor: pointer;
+}
+.ze .topbar .closebutton {
+	background-color: #0002;
+	position: absolute;
+	right: 0;
+	top: 0;
+	width: 50px;
+	height: 50px;
+	transition: background-color 0.2s ease-out;
+	cursor: pointer;
+}
+.ze .topbar .closebutton:hover {
+	background-color: var(--zedDanger);
+}
+.ze .sidebar {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 300px;
+	height: calc(100vh - 50px);
+	background-color: var(--zedDark);
+	overflow-y: auto;
+}
+.zipEditorFolder {
+	margin-left: 25px;
+	font-size: 25px;
+	overflow: hidden;
+	height: 30px;
+	cursor: pointer;
+	position: relative;
+}
+.zipEditorFolderText {
+	color: #555;
+	margin: 0;
+}
+.zipEditorFolder svg {
+	position: absolute;
+}
