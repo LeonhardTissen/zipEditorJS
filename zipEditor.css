@@ -45,7 +45,6 @@
 .ze .topbar .button {
 	background-color: var(--zedDark);
 	height: 50px;
-	transition: background-color 0.2s ease-out;
 	cursor: pointer;
 	border: none;
 	font-size: 30px;
@@ -53,7 +52,6 @@
 .ze .topbar .button:hover {
 	background-color: var(--zedMain);
 	height: 50px;
-	transition: background-color 0.2s ease-out;
 	cursor: pointer;
 }
 .ze .topbar .closebutton {
@@ -63,7 +61,7 @@
 	top: 0;
 	width: 50px;
 	height: 50px;
-	transition: background-color 0.2s ease-out;
+
 	cursor: pointer;}
 .ze .topbar .closebutton:hover {
 	background-color: var(--zedDanger);
@@ -117,7 +115,7 @@
 	height: calc(100% - 30px);
 	color: var(--zedFont);
 	font-size: 25px;
-	background-color: var(--zedDarkest);
+	background-color: var(--zedDarker);
 	font-family: "Consolas";
 	user-select: text;
 	border: none;
@@ -147,14 +145,15 @@
 .ze .main .imageedit .window {
 	width: 200px;
 	position: fixed;
-	left: 450px;
-	top: 100px;
 	background-color: var(--zedDarker);
 	padding: 5px;
 	z-index: 999;
 }
 .ze .main .imageedit .window p {
 	font-size: 25px;
+}
+.ze .main .imageedit .window .contents {
+	background-color: var(--zedMain);
 }
 .ze .main .imageedit .window .contents input[type="range"] {
 	vertical-align: top;
@@ -166,8 +165,11 @@
 	padding: 0;
 	border: 0;
 }
-.ze .main .imageedit .window .contents svg {
+.ze .main .imageedit .window .contents svg #toolsize {
 	filter: invert(var(--zedInvert));
+}
+.ze .main .imageedit .window .contents .brushalpha {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURd/f3////zMjcGAAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBjTYwABQSCglEENMxgYGAAynwRB8BEAgQAAAABJRU5ErkJggg==);
 }
 .ze .main .imageedit .canvascontainer {
 	position: absolute;
@@ -180,6 +182,14 @@
 	position: absolute;
 	left: 0;
 	top: 0;
+}
+.ze .main .imageedit .canvascontainer .cursor {
+	position: absolute;
+	left: 0;
+	top: 0;
+	transform: translate(-50%, -50%);
+	border-radius: 50%;
+	background-color: #00000020;
 }
 .zipEditorFolder {
 	padding-left: 25px;

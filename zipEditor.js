@@ -14,7 +14,7 @@ let unsaved_changes_warning = false;
 function zipEditorInit() {
 	document.body.innerHTML += 
 	`
-	<div class="ze" style="top:100vh">
+	<div class="ze" style="top:100vh" onmouseup="releaseWindows();" onmousemove="moveWindows();">
 		<div class="topbar">
 			<button class="button" onclick="zipEditorImport()">Import</button>
 			<button class="button" onclick="zipEditorExport()">Export</button>
@@ -37,22 +37,26 @@ function zipEditorInit() {
 			</div>
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
-				<div class="window">
+				<div class="window" style="left:450px;top:100px;" onmousedown="startWindowDrag(this);">
 					<p>Pencil</p>
 					<div class="contents">
 						<svg height="30" width="30" class="brushsize">
 							<circle id="toolsize" fill="white" cx="15" cy="15" r="1"></circle>
 						</svg>
-						<input type="range" min="1" max="15" value="1" oninput="changeToolSize(this.value)">
+						<input type="range" min="1" max="15" value="1" step="0.2" oninput="changeToolSize(this.value)">
 						<input type="color" oninput="current_tool_color=this.value" value="#000000">
 						<input type="color" oninput="current_tool_secondary_color=this.value" value="#FFFFFF">
 						<svg height="30" width="30" class="brushalpha">
-							<circle id="toolalpha" fill="white" fill-opacity="1" cx="15" cy="15" r="15"></circle>
+							<circle id="toolalpha" fill="black" fill-opacity="1" cx="15" cy="15" r="12"></circle>
 						</svg>
 						<input type="range" min="0" max="1" step="0.01" value="1" oninput="changeToolAlpha(this.value)" >
 					</div>
 				</div>
-				<div class="window">
+				<div class="window" style="left:690px;top:100px;" onmousedown="startWindowDrag(this);">
+					<p>Tools</p>
+					<div class="contents">
+						<p>Pencil</p>
+					</div>
 				</div>
 				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()" oncontextmenu="event.preventDefault()">
 					<canvas id="layer0"></canvas>
@@ -61,6 +65,7 @@ function zipEditorInit() {
 					<canvas id="layer3"></canvas>
 					<canvas id="layer4"></canvas>
 					<canvas class="tempcanvas"></canvas>
+					<div class="cursor"></div>
 				</div>
 			</div>
 			<button class="savechangesbutton" onclick="textSaveChanges()" style="display:none">Save Changes</button>
@@ -86,6 +91,26 @@ function toggleTheme() {
 document.documentElement.setAttribute('theme', 'main');
 if (localStorage.getItem('jwbpTheme') == 'dark') {
 	toggleTheme()
+}
+
+function adjustPxString(str, diff) {
+	return parseInt(str.replace('px','')) + diff + "px";
+}
+
+function startWindowDrag(elem) {
+	if (event.layerY < 30) {
+		elem.classList.add('dragged');
+	}
+}
+function releaseWindows() {
+	document.querySelectorAll('.dragged').forEach(elem => elem.classList.remove('dragged'))
+}
+function moveWindows() {
+	const draggedWindow = document.querySelector('.dragged')
+	if (draggedWindow !== null) {
+		draggedWindow.style.left = adjustPxString(draggedWindow.style.left, event.movementX)
+		draggedWindow.style.top = adjustPxString(draggedWindow.style.top, event.movementY)
+	}
 }
 
 function zipEditorImport() {
@@ -224,7 +249,7 @@ function zoomCanvas() {
 	const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
 	const oldzoom = imgcanvascontainer.getAttribute('zoom')
 	const zoomfactor = (event.deltaY < 0 ? 1.1 : 0.9090909);
-	const newzoom = Math.min(10, Math.max(0.1, oldzoom * zoomfactor));
+	const newzoom = Math.min(15, Math.max(0.1, oldzoom * zoomfactor));
 	imgcanvascontainer.style.transform = `scale(${newzoom})`;
 	imgcanvascontainer.setAttribute('zoom', newzoom)
 }
@@ -232,8 +257,8 @@ function zoomCanvas() {
 function moveCanvas() {
 	if ((event.buttons === 1 && buttons_held.has(" ")) || event.buttons === 4) {
 		const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
-		imgcanvascontainer.style.left = parseInt(imgcanvascontainer.style.left.replace('px','')) + event.movementX + "px";
-		imgcanvascontainer.style.top = parseInt(imgcanvascontainer.style.top.replace('px','')) + event.movementY + "px";
+		imgcanvascontainer.style.left = adjustPxString(imgcanvascontainer.style.left, event.movementX)
+		imgcanvascontainer.style.top = adjustPxString(imgcanvascontainer.style.top, event.movementY)
 	}
 }
 
@@ -267,20 +292,26 @@ function canvasActionDown() {
 		}
 	}
 }
-function canvasActionMove() {
-	console.log(event.buttons === 2)
-	if ((event.buttons === 1 || event.buttons === 2) && !buttons_held.has(" ")) {
-		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		const imgcontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
-		const zoom = imgcontainer.getAttribute('zoom')
-		const tempcanvas = document.querySelector('.ze .main .imageedit .tempcanvas');
+function updateCursor(x,y) {
 
+}
+
+function canvasActionMove() {
+	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	const rect = imgcanvas.getBoundingClientRect()
+	const imgcontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+	const zoom = imgcontainer.getAttribute('zoom')
+	const x = (event.clientX - rect.left) / zoom;
+	const y = (event.clientY - rect.top) / zoom;
+	const cursor = document.querySelector('.ze .main .imageedit .canvascontainer .cursor');
+	cursor.style.left = x + "px";
+	cursor.style.top = y + "px";
+	cursor.style.width = current_tool_size + "px";
+	cursor.style.height = current_tool_size + "px";
+	if ((event.buttons === 1 || event.buttons === 2) && !buttons_held.has(" ")) {
 		switch (current_tool) {
 			case "pencil":
 				if (event.buttons === 1 || event.buttons === 2) {
-					const rect = imgcanvas.getBoundingClientRect()
-					const x = (event.clientX - rect.left) / zoom;
-					const y = (event.clientY - rect.top) / zoom;
 					current_tool_buffer.push([x, y]);
 					const secondary = (event.buttons === 2)
 					drawBuffer(true, secondary)
@@ -295,7 +326,7 @@ function changeToolSize(value) {
 	current_tool_size = value;
 }
 function changeToolAlpha(value) {
-	document.querySelector('.ze .main .imageedit .window .brushalpha circle').setAttribute('fill-opacity', value);
+	document.querySelector('.ze .main .imageedit .window .brushalpha #toolalpha').setAttribute('fill-opacity', value);
 	current_tool_alpha = value;
 }
 
