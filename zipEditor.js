@@ -17,11 +17,16 @@ function zipEditorInit() {
 		<div class="main">
 			<div class="textedit" style="display:none;">
 				<p></p>
-				<textarea spellcheck="false" oninput="loaded_text_files[this.getAttribute('path')] = this.value;"></textarea>
+				<p class="unsavedchanges"> (Unsaved Changes)</p>
+				<textarea spellcheck="false" oninput="textUnsavedChanges()"></textarea>
+				<button class="savechangesbutton" onclick="textSaveChanges()" style="display:none">Save Changes</button>
 			</div>
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
-				<canvas></canvas>
+				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()">
+					<canvas></canvas>
+					<canvas class="tempcanvas"></canvas>
+				</div>
 			</div>
 		</div>
 		<input type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
@@ -109,7 +114,7 @@ function zipEditorImportZip() {
 							const src = URL.createObjectURL(blob)
 							loaded_images[imagePathString] = src;
 							document.querySelector(destinationPath).innerHTML += 
-							`<img path="${imagePathString}" onclick="closeAllTools();let path=this.getAttribute('path');initializeImageEditor(loaded_images[path],path)" name="${imageName}" src="${src}">`
+							`<img path="${imagePathString}" onclick="if (checkIfSaved()) {closeAllTools();let path=this.getAttribute('path');initializeImageEditor(loaded_images[path],path)}" name="${imageName}" src="${src}">`
 						})
 					} else if (['txt','json','html','js','css'].includes(itemExtension)) {
 						const filePathString = key;
@@ -124,7 +129,7 @@ function zipEditorImportZip() {
 							blob.text().then(function (text) {
 								loaded_text_files[filePathString] = text;
 								document.querySelector(destinationPath).innerHTML += 
-								`<p path="${filePathString}" onclick="closeAllTools();let path=this.getAttribute('path');initializeTextarea(loaded_text_files[path],path)" class="zipEditorFileName">${fileName}</p>`
+								`<p path="${filePathString}" onclick="if (checkIfSaved()) {closeAllTools();let path=this.getAttribute('path');initializeTextarea(loaded_text_files[path],path)}" class="zipEditorFileName">${fileName}</p>`
 							})
 						})
 					}
@@ -138,8 +143,14 @@ function zipEditorImportZip() {
 
 const buttons_held = new Set();
 
+function checkIfSaved() {
+	return !(unsaved_changes_warning && !confirm("You have unsaved, proceed anyway?"))
+}
+
 let ctx;
+let tempctx;
 function initializeImageEditor(blob,path) {
+	textDiscardChanges()
 	const imgwindow = document.querySelector('.ze .main .imageedit');
 	imgwindow.style.display = 'block';
 	imgwindow.setAttribute('path', path);
@@ -147,39 +158,131 @@ function initializeImageEditor(blob,path) {
 	imgwindowmaxsize = Math.min(imgwindowrect.width, imgwindowrect.height)
 	const imgname = document.querySelector('.ze .main .imageedit p');
 	imgname.innerText = path;
-	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+	const imgcanvas = document.querySelector('.ze .main .imageedit .canvascontainer canvas');
 	ctx = imgcanvas.getContext('2d');
+	const imgtempcanvas = document.querySelector('.ze .main .imageedit .canvascontainer .tempcanvas');
+	tempctx = imgtempcanvas.getContext('2d');
 	const image = new Image()
 	image.src = blob;
 	imgcanvas.width = image.width;
 	imgcanvas.height = image.height;
-	imgcanvas.style.transformOrigin = "center";
-	imgcanvas.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
-	imgcanvas.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
+	imgtempcanvas.width = image.width;
+	imgtempcanvas.height = image.height;
+	imgcanvascontainer.style.width = image.width + "px";
+	imgcanvascontainer.style.height = image.height + "px";
+	imgcanvascontainer.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
+	imgcanvascontainer.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
 	const imgzoom = Math.min(4, imgwindowmaxsize / Math.max(image.width, image.height) / 1.5);
-	imgcanvas.setAttribute('zoom', imgzoom)
-	imgcanvas.style.transform = `scale(${imgzoom})`;
+	imgcanvascontainer.setAttribute('zoom', imgzoom)
+	imgcanvascontainer.style.transform = `scale(${imgzoom})`;
 	ctx.drawImage(image, 0, 0);
 }
 
 function zoomCanvas() {
-	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-	const oldzoom = imgcanvas.getAttribute('zoom')
+	const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+	const oldzoom = imgcanvascontainer.getAttribute('zoom')
 	const zoomfactor = (event.deltaY < 0 ? 1.1 : 0.9090909);
 	const newzoom = Math.min(10, Math.max(0.1, oldzoom * zoomfactor));
-	imgcanvas.style.transform = `scale(${newzoom})`;
-	imgcanvas.setAttribute('zoom', newzoom)
+	imgcanvascontainer.style.transform = `scale(${newzoom})`;
+	imgcanvascontainer.setAttribute('zoom', newzoom)
 }
 
 function moveCanvas() {
-	if (event.buttons === 1 && buttons_held.has(" ")) {
-		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		imgcanvas.style.left = parseInt(imgcanvas.style.left.replace('px','')) + event.movementX + "px";
-		imgcanvas.style.top = parseInt(imgcanvas.style.top.replace('px','')) + event.movementY + "px";
+	if ((event.buttons === 1 && buttons_held.has(" ")) || event.buttons === 4) {
+		const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+		imgcanvascontainer.style.left = parseInt(imgcanvascontainer.style.left.replace('px','')) + event.movementX + "px";
+		imgcanvascontainer.style.top = parseInt(imgcanvascontainer.style.top.replace('px','')) + event.movementY + "px";
 	}
+}
+let current_tool = "pencil";
+let current_tool_size = 0.5;
+let current_tool_color = "#000"
+let current_tool_buffer = [];
+
+function canvasActionUp() {
+	if (event.which === 1) {
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		const zoom = imgcanvas.getAttribute('zoom')
+		switch (current_tool) {
+			case "pencil":
+				drawBuffer(false)
+				break;
+		}
+	} 
+}
+function canvasActionDown() {
+	if (event.buttons === 1) {
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		const zoom = imgcanvas.getAttribute('zoom')
+		switch (current_tool) {
+			case "pencil":
+				if (event.buttons === 1) {
+					current_tool_buffer = [[event.layerX, event.layerY]];
+				}
+				break;
+		}
+	}
+}
+function canvasActionMove() {
+	if (event.buttons === 1) {
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		const zoom = imgcanvas.getAttribute('zoom')
+		const tempcanvas = document.querySelector('.ze .main .imageedit .tempcanvas');
+
+		switch (current_tool) {
+			case "pencil":
+				if (event.buttons === 1) {
+					console.log(current_tool_buffer)
+					current_tool_buffer.push([event.layerX, event.layerY]);
+				}
+				drawBuffer(true)
+				break;
+		}
+	}
+}
+function drawBuffer(temp) {
+	const context = (temp ? tempctx : ctx)
+	tempctx.clearRect(0, 0, 10000, 10000)
+	context.strokeStyle = current_tool_color;
+	context.beginPath();
+	context.lineCap = "round";
+	context.moveTo(current_tool_buffer[0][0]+0.5,current_tool_buffer[0][1]+0.5)
+	for (var i = 1; i < current_tool_buffer.length; i ++) {
+		context.lineTo(current_tool_buffer[i][0]+0.5,current_tool_buffer[i][1]+0.5)
+	}
+	context.lineWidth = current_tool_size;
+	context.stroke()
+	context.stroke()
+}
+
+var unsaved_changes_warning = false;
+function textUnsavedChanges() {
+	unsaved_changes_warning = true;
+	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	save_button.style.display = 'block';
+	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
+	unsaved_warning.style.display = 'inline';
+}
+function textSaveChanges() {
+	unsaved_changes_warning = false;
+	const textarea = document.querySelector('.ze .main .textedit textarea');
+	loaded_text_files[textarea.getAttribute('path')] = textarea.value;
+	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	save_button.style.display = 'none';
+	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
+	unsaved_warning.style.display = 'none';
+}
+function textDiscardChanges() {
+	unsaved_changes_warning = false;
+	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	save_button.style.display = 'none';
+	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
+	unsaved_warning.style.display = 'none';
 }
 
 function initializeTextarea(text,path) {
+	textDiscardChanges()
 	const textwindow = document.querySelector('.ze .main .textedit')
 	textwindow.style.display = 'block';
 	textwindow.setAttribute('path', path);

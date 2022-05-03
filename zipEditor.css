@@ -83,6 +83,14 @@
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
+	display: inline;
+}
+.ze .main .textedit .unsavedchanges {
+	font-size: 25px;
+	margin: 0;
+	color: var(--zedDanger);
+	pointer-events: none;
+	display: inline;
 }
 .ze .main .textedit textarea {
 	width: 100%;
@@ -91,6 +99,16 @@
 	font-size: 25px;
 	background-color: var(--zedDarkest);
 	font-family: "Consolas";
+	user-select: text;
+}
+.ze .main .textedit .savechangesbutton {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	font-size: 30px;
+	background-color: var(--zedDark);
+	border: 2px solid var(--zedDarker);
+	border: none;
 }
 .ze .main .imageedit {
 	width: 100%;
@@ -104,10 +122,17 @@
 	color: var(--zedLightFont);
 	pointer-events: none;
 }
-.ze .main .imageedit canvas {
+.ze .main .imageedit .canvascontainer {
 	position: absolute;
-	border: 1px solid #888;
+	background-color: #888;
+	cursor: crosshair;
+	transform-origin: center;
+}
+.ze .main .imageedit .canvascontainer canvas {
 	image-rendering: pixelated;
+	position: absolute;
+	left: 0;
+	top: 0;
 }
 .zipEditorFolder {
 	padding-left: 25px;
