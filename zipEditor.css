@@ -89,6 +89,7 @@
 	color: var(--zedFont);
 	font-size: 25px;
 	background-color: var(--zedDarkest);
+	font-family: "Consolas";
 }
 .zipEditorFolder {
 	padding-left: 25px;
