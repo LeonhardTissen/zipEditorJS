@@ -15,9 +15,13 @@ function zipEditorInit() {
 		</div>
 		<div class="sidebar"></div>
 		<div class="main">
-			<div class="textedit">
+			<div class="textedit" style="display:none;">
 				<p></p>
-				<textarea spellcheck="false" style="display:none;" oninput="raw_files[this.getAttribute('path')] = this.value;"></textarea>
+				<textarea spellcheck="false" oninput="loaded_text_files[this.getAttribute('path')] = this.value;"></textarea>
+			</div>
+			<div class="imageedit" onwheel="zoomCanvas()" style="display:none;">
+				<p></p>
+				<canvas></canvas>
 			</div>
 		</div>
 		<input type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
@@ -40,18 +44,16 @@ function zipEditorClose() {
 	}, 500)
 }
 
-
-let raw_files;
-let loadedZip;
-let zipFileObject;
+let loaded_text_files;
+let loaded_images;
 let sortedFilePaths;
 function zipEditorImportZip() {
 	const files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
 
 	for (let i = 0, f; f = files[i]; i++) {
-		loadedZip = new JSZip();
-		zipFileObject = {}
-		raw_files = {}
+		const loadedZip = new JSZip();
+		loaded_text_files = {}
+		loaded_images = {}
 		document.querySelector('.sidebar').innerHTML = '';
 		loadedZip.loadAsync(f).then(function (zip) {
 			const folders = new Set();
@@ -102,8 +104,10 @@ function zipEditorImportZip() {
 							`<div class="images"></div>`
 						}
 						loadedZip.file(imagePathString).async("blob").then(function(blob) {
+							const src = URL.createObjectURL(blob)
+							loaded_images[imagePathString] = src;
 							document.querySelector(destinationPath).innerHTML += 
-							`<img path="${imagePathString}" name="${imageName}" src="${URL.createObjectURL(blob)}">`
+							`<img path="${imagePathString}" onclick="closeAllTools();let path=this.getAttribute('path');initializeImageEditor(loaded_images[path],path)" name="${imageName}" src="${src}">`
 						})
 					} else if (['txt','json','html','js','css'].includes(itemExtension)) {
 						const filePathString = key;
@@ -116,9 +120,9 @@ function zipEditorImportZip() {
 						const destinationPath = '.ze .sidebar' + prefixDot + filePathArray.join(" .")
 						loadedZip.file(filePathString).async("blob").then(function(blob) {
 							blob.text().then(function (text) {
-								raw_files[filePathString] = text;
+								loaded_text_files[filePathString] = text;
 								document.querySelector(destinationPath).innerHTML += 
-								`<p path="${filePathString}" onclick="let path=this.getAttribute('path');initializeTextarea(raw_files[path],path)" class="zipEditorFileName">${fileName}</p>`
+								`<p path="${filePathString}" onclick="closeAllTools();let path=this.getAttribute('path');initializeTextarea(loaded_text_files[path],path)" class="zipEditorFileName">${fileName}</p>`
 							})
 						})
 					}
@@ -130,13 +134,53 @@ function zipEditorImportZip() {
 	}
 }
 
+let ctx;
+function initializeImageEditor(blob,path) {
+	const imgwindow = document.querySelector('.ze .main .imageedit');
+	imgwindow.style.display = 'block';
+	imgwindow.setAttribute('path', path);
+	const imgname = document.querySelector('.ze .main .imageedit p');
+	imgname.innerText = path;
+	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	ctx = imgcanvas.getContext('2d');
+	const image = new Image()
+	image.src = blob;
+	console.log(image)
+	imgcanvas.width = image.width;
+	imgcanvas.height = image.height;
+	imgcanvas.style.transformOrigin = "center";
+	imgcanvas.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
+	imgcanvas.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
+	imgcanvas.setAttribute('zoom', '1')
+	imgcanvas.style.transform = 'scale(1)';
+	ctx.drawImage(image, 0, 0);
+}
+
+function zoomCanvas() {
+	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	const oldzoom = imgcanvas.getAttribute('zoom')
+	const zoomfactor = (event.deltaY < 0 ? 1.1 : 0.9090909);
+	const newzoom = Math.min(10, Math.max(0.1, oldzoom * zoomfactor));
+	imgcanvas.style.transform = `scale(${newzoom})`;
+	imgcanvas.setAttribute('zoom', newzoom)
+}
+
 function initializeTextarea(text,path) {
+	const textwindow = document.querySelector('.ze .main .textedit')
+	textwindow.style.display = 'block';
+	textwindow.setAttribute('path', path);
 	const textname = document.querySelector('.ze .main .textedit p')
 	textname.innerText = path;
 	const textarea = document.querySelector('.ze .main .textedit textarea');
 	textarea.value = text;
-	textarea.style.display = 'block';
 	textarea.setAttribute('path', path);
+}
+
+function closeAllTools() {
+	const textwindow = document.querySelector('.ze .main .textedit')
+	textwindow.style.display = 'none';
+	const imgwindow = document.querySelector('.ze .main .imageedit')
+	imgwindow.style.display = 'none';
 }
 
 function blobToImage(blob) {

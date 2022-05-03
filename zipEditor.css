@@ -91,6 +91,22 @@
 	background-color: var(--zedDarkest);
 	font-family: "Consolas";
 }
+.ze .main .imageedit {
+	width: 100%;
+	height: 100%;
+	position: relative;
+	overflow: hidden;
+}
+.ze .main .imageedit p {
+	font-size: 25px;
+	margin: 0;
+	color: var(--zedLightFont);
+}
+.ze .main .imageedit canvas {
+	position: absolute;
+	border: 1px solid #888;
+	image-rendering: pixelated;
+}
 .zipEditorFolder {
 	padding-left: 25px;
 	font-size: 25px;
