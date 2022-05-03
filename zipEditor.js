@@ -19,7 +19,7 @@ function zipEditorInit() {
 				<p></p>
 				<textarea spellcheck="false" oninput="loaded_text_files[this.getAttribute('path')] = this.value;"></textarea>
 			</div>
-			<div class="imageedit" onwheel="zoomCanvas()" style="display:none;">
+			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
 				<canvas></canvas>
 			</div>
@@ -27,6 +27,8 @@ function zipEditorInit() {
 		<input type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
 	`
+	document.body.onkeydown = () => buttons_held.add(event.key);
+	document.body.onkeyup = () => buttons_held.delete(event.key);
 	zipEditorWindow = document.querySelector('.ze');
 	setTimeout(function() {
 		zipEditorWindow.style.top = 0;
@@ -134,25 +136,29 @@ function zipEditorImportZip() {
 	}
 }
 
+const buttons_held = new Set();
+
 let ctx;
 function initializeImageEditor(blob,path) {
 	const imgwindow = document.querySelector('.ze .main .imageedit');
 	imgwindow.style.display = 'block';
 	imgwindow.setAttribute('path', path);
+	imgwindowrect = imgwindow.getBoundingClientRect()
+	imgwindowmaxsize = Math.min(imgwindowrect.width, imgwindowrect.height)
 	const imgname = document.querySelector('.ze .main .imageedit p');
 	imgname.innerText = path;
 	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
 	ctx = imgcanvas.getContext('2d');
 	const image = new Image()
 	image.src = blob;
-	console.log(image)
 	imgcanvas.width = image.width;
 	imgcanvas.height = image.height;
 	imgcanvas.style.transformOrigin = "center";
 	imgcanvas.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
 	imgcanvas.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
-	imgcanvas.setAttribute('zoom', '1')
-	imgcanvas.style.transform = 'scale(1)';
+	const imgzoom = Math.min(4, imgwindowmaxsize / Math.max(image.width, image.height) / 1.5);
+	imgcanvas.setAttribute('zoom', imgzoom)
+	imgcanvas.style.transform = `scale(${imgzoom})`;
 	ctx.drawImage(image, 0, 0);
 }
 
@@ -163,6 +169,14 @@ function zoomCanvas() {
 	const newzoom = Math.min(10, Math.max(0.1, oldzoom * zoomfactor));
 	imgcanvas.style.transform = `scale(${newzoom})`;
 	imgcanvas.setAttribute('zoom', newzoom)
+}
+
+function moveCanvas() {
+	if (event.buttons === 1 && buttons_held.has(" ")) {
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		imgcanvas.style.left = parseInt(imgcanvas.style.left.replace('px','')) + event.movementX + "px";
+		imgcanvas.style.top = parseInt(imgcanvas.style.top.replace('px','')) + event.movementY + "px";
+	}
 }
 
 function initializeTextarea(text,path) {
