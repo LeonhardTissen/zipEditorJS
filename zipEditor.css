@@ -7,6 +7,15 @@
 	--zedLightFont: #555;
 	--zedDanger: #f00;
 }
+:root[theme="dark"] {
+	--zedMain: #202020;
+	--zedDark: #181818;
+	--zedDarker: #080808;
+	--zedDarkest: #000000;
+	--zedFont: #fff;
+	--zedLightFont: #999;
+	--zedDanger: #f00;
+}
 @font-face {
 	font-family: "Montserrat";
 	src: url("Montserrat-VF.woff2");
@@ -32,7 +41,7 @@
 	background-color: var(--zedDarker);
 }
 .ze .topbar .button {
-	background-color: #0002;
+	background-color: var(--zedDark);
 	height: 50px;
 	transition: background-color 0.2s ease-out;
 	cursor: pointer;
@@ -40,13 +49,13 @@
 	font-size: 30px;
 }
 .ze .topbar .button:hover {
-	background-color: #0004;
+	background-color: var(--zedMain);
 	height: 50px;
 	transition: background-color 0.2s ease-out;
 	cursor: pointer;
 }
 .ze .topbar .closebutton {
-	background-color: #0002;
+	background-color: var(--zedDark);
 	position: absolute;
 	right: 0;
 	top: 0;
@@ -57,6 +66,19 @@
 }
 .ze .topbar .closebutton:hover {
 	background-color: var(--zedDanger);
+}
+.ze .topbar .darkbutton {
+	position: absolute;
+	right: 55px;
+	top: 5px;
+	width: 40px;
+	height: 40px;
+	transition: background-color 0.2s ease-out;
+	cursor: pointer;
+	mask-composite:exclude;
+}
+.ze .topbar .darkbutton:hover {
+	background-color: var(--zedDarker);
 }
 .ze .sidebar {
 	position: absolute;
@@ -79,7 +101,7 @@
 	height: 100%;
 }
 .ze .main .textedit p {
-	font-size: 25px;
+	font-size: 15px;
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
@@ -117,19 +139,19 @@
 	overflow: hidden;
 }
 .ze .main .imageedit p {
-	font-size: 25px;
+	font-size: 15px;
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
 }
 .ze .main .imageedit .canvascontainer {
 	position: absolute;
-	background-color: #888;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURd/f3////zMjcGAAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBjTYwABQSCglEENMxgYGAAynwRB8BEAgQAAAABJRU5ErkJggg==);
 	cursor: crosshair;
 	transform-origin: center;
+	image-rendering: pixelated;
 }
 .ze .main .imageedit .canvascontainer canvas {
-	image-rendering: pixelated;
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -158,6 +180,7 @@
 .zipEditorFolder img {
 	display: inline-block;
 	border: 1px solid #888;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURd/f3////zMjcGAAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBjTYwABQSCglEENMxgYGAAynwRB8BEAgQAAAABJRU5ErkJggg==);
 	vertical-align: top;
 	margin: 2px;
 	max-height: 60px;
