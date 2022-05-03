@@ -67,7 +67,7 @@ function zipEditorImportZip() {
 				}
 				const destination = '.ze .sidebar' + prefixDot + itemArray.join(" .")
 				document.querySelector(destination).innerHTML += `
-				<div class="zipEditorFolder ${folderName}" onclick="toggleFolder(this)">
+				<div class="zipEditorFolder ${folderName}" onclick="toggleFolder(this)" style="height:30px">
 					<p class="zipEditorFolderText">${folderName}</p>
 					<svg height="2500" width="25">
 						<line x1="4" y1="4" x2="21" y2="4" style="stroke:#555; stroke-width:3; stroke-linecap:round" />
@@ -76,15 +76,47 @@ function zipEditorImportZip() {
 				</div>
 				`
 			}
+			for (const [key, value] of Object.entries(zip.files)) {
+				const itemPath = key.split("/")
+				if (itemPath[itemPath.length - 1].endsWith('.png') && itemPath[0] !== "__MACOSX") {
+					const image = key;
+					const imagePathArray = image.split("/");
+					const imageName = imagePathArray.pop()
+					var prefixDot = "";
+					if (imagePathArray.length) {
+						prefixDot = " ."
+					}
+					const destinationPath = '.ze .sidebar' + prefixDot + imagePathArray.join(" .") + ' .images'
+					if (document.querySelector(destinationPath) == null) {
+						document.querySelector(destinationPath.replace('.images', '')).innerHTML += 
+						`<div class="images"></div>`
+					}
+					loadedZip.file(image).async("blob").then(function(blob) {
+						document.querySelector(destinationPath).innerHTML += 
+						`<img src="${URL.createObjectURL(blob)}">`
+					})
+				};
+			};
 		}, function () {
 			alert("Not a valid zip file")
 		});
 	}
 }
 
+function blobToImage(blob) {
+	const url = URL.createObjectURL(blob);
+	const image = new Image();
+	image.src = url;
+	return image;
+}
+
 function toggleFolder(elem) {
 	const rect = elem.getBoundingClientRect()
 	if (event.clientY - rect.top <= 30) {
-		elem.style.height = (elem.style.height == "auto" ? "30px" : "auto")
+		if (elem.style.height == "30px") {
+			elem.style.height = "auto";
+		} else {
+			elem.style.height = "30px";
+		}
 	}
 }

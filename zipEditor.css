@@ -60,13 +60,15 @@
 	position: absolute;
 	left: 0;
 	bottom: 0;
-	width: 300px;
+	width: 400px;
 	height: calc(100vh - 50px);
 	background-color: var(--zedDark);
 	overflow-y: auto;
+	resize: horizontal;
+	user-select: none;
 }
 .zipEditorFolder {
-	margin-left: 25px;
+	padding-left: 25px;
 	font-size: 25px;
 	overflow: hidden;
 	height: 30px;
@@ -76,6 +78,17 @@
 .zipEditorFolderText {
 	color: #555;
 	margin: 0;
+}
+.zipEditorFolder .images {
+	margin-left: 25px;
+	background-color: var(--zedDarker);
+}
+.zipEditorFolder img {
+	display: inline-block;
+	border: 1px solid #888;
+	user-drag: none;
+	vertical-align: top;
+	margin: 2px;
 }
 .zipEditorFolder svg {
 	position: absolute;
