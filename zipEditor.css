@@ -6,6 +6,7 @@
 	--zedFont: #000;
 	--zedLightFont: #555;
 	--zedDanger: #f00;
+	--zedInvert: 0.4;
 }
 :root[theme="dark"] {
 	--zedMain: #202020;
@@ -15,6 +16,7 @@
 	--zedFont: #fff;
 	--zedLightFont: #999;
 	--zedDanger: #f00;
+	--zedInvert: 0;
 }
 @font-face {
 	font-family: "Montserrat";
@@ -62,8 +64,7 @@
 	width: 50px;
 	height: 50px;
 	transition: background-color 0.2s ease-out;
-	cursor: pointer;
-}
+	cursor: pointer;}
 .ze .topbar .closebutton:hover {
 	background-color: var(--zedDanger);
 }
@@ -73,12 +74,9 @@
 	top: 5px;
 	width: 40px;
 	height: 40px;
-	transition: background-color 0.2s ease-out;
 	cursor: pointer;
 	mask-composite:exclude;
-}
-.ze .topbar .darkbutton:hover {
-	background-color: var(--zedDarker);
+	filter: invert(var(--zedInvert));
 }
 .ze .sidebar {
 	position: absolute;
@@ -108,7 +106,7 @@
 	display: inline;
 }
 .ze .main .textedit .unsavedchanges {
-	font-size: 25px;
+	font-size: 15px;
 	margin: 0;
 	color: var(--zedDanger);
 	pointer-events: none;
@@ -122,6 +120,8 @@
 	background-color: var(--zedDarkest);
 	font-family: "Consolas";
 	user-select: text;
+	border: none;
+	outline: none;
 }
 .ze .main .textedit .savechangesbutton {
 	position: absolute;
@@ -180,7 +180,7 @@
 .zipEditorFolder img {
 	display: inline-block;
 	border: 1px solid #888;
-	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURd/f3////zMjcGAAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAUSURBVBjTYwABQSCglEENMxgYGAAynwRB8BEAgQAAAABJRU5ErkJggg==);
+	background-color: white;
 	vertical-align: top;
 	margin: 2px;
 	max-height: 60px;

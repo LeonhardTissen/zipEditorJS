@@ -1,4 +1,13 @@
-let zipEditorWindow;
+let ctx;
+let tempctx;
+let loaded_text_files;
+let loaded_images;
+let current_tool = "pencil";
+let current_tool_size = 0.5;
+let current_tool_color = "#000"
+let current_tool_buffer = [];
+let buttons_held = new Set();
+
 function zipEditorInit() {
 	document.body.innerHTML += 
 	`
@@ -27,7 +36,11 @@ function zipEditorInit() {
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
 				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()">
-					<canvas></canvas>
+					<canvas id="layer0"></canvas>
+					<canvas id="layer1"></canvas>
+					<canvas id="layer2"></canvas>
+					<canvas id="layer3"></canvas>
+					<canvas id="layer4"></canvas>
 					<canvas class="tempcanvas"></canvas>
 				</div>
 			</div>
@@ -37,9 +50,8 @@ function zipEditorInit() {
 	`
 	document.body.onkeydown = () => buttons_held.add(event.key);
 	document.body.onkeyup = () => buttons_held.delete(event.key);
-	zipEditorWindow = document.querySelector('.ze');
 	setTimeout(function() {
-		zipEditorWindow.style.top = 0;
+		document.querySelector('.ze').style.top = 0;
 	}, 1)
 }
 
@@ -61,15 +73,12 @@ function zipEditorImport() {
 }
 
 function zipEditorClose() {
-	zipEditorWindow.style.top = "100vh"
+	document.querySelector('.ze').style.top = "100vh"
 	setTimeout(function() {
-		zipEditorWindow.remove();
+		document.querySelector('.ze').remove();
 	}, 500)
 }
 
-let loaded_text_files;
-let loaded_images;
-let sortedFilePaths;
 function zipEditorImportZip() {
 	const files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
 
@@ -157,14 +166,10 @@ function zipEditorImportZip() {
 	}
 }
 
-const buttons_held = new Set();
-
 function checkIfSaved() {
 	return !(unsaved_changes_warning && !confirm("You have unsaved, proceed anyway?"))
 }
 
-let ctx;
-let tempctx;
 function initializeImageEditor(blob,path) {
 	textDiscardChanges()
 	const imgwindow = document.querySelector('.ze .main .imageedit');
@@ -181,10 +186,10 @@ function initializeImageEditor(blob,path) {
 	tempctx = imgtempcanvas.getContext('2d');
 	const image = new Image()
 	image.src = blob;
-	imgcanvas.width = image.width;
-	imgcanvas.height = image.height;
-	imgtempcanvas.width = image.width;
-	imgtempcanvas.height = image.height;
+	document.querySelectorAll('.ze .main .imageedit .canvascontainer canvas').forEach((elem) => {
+		elem.width = image.width;
+		elem.height = image.height;
+	})
 	imgcanvascontainer.style.width = image.width + "px";
 	imgcanvascontainer.style.height = image.height + "px";
 	imgcanvascontainer.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
@@ -211,10 +216,6 @@ function moveCanvas() {
 		imgcanvascontainer.style.top = parseInt(imgcanvascontainer.style.top.replace('px','')) + event.movementY + "px";
 	}
 }
-let current_tool = "pencil";
-let current_tool_size = 0.5;
-let current_tool_color = "#000"
-let current_tool_buffer = [];
 
 function canvasActionUp() {
 	if (event.which === 1) {
