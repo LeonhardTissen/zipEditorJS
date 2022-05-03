@@ -123,7 +123,7 @@
 	border: none;
 	outline: none;
 }
-.ze .main .textedit .savechangesbutton {
+.ze .main .savechangesbutton {
 	position: absolute;
 	right: 10px;
 	bottom: 10px;

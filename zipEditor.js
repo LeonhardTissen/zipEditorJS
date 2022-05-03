@@ -9,6 +9,7 @@ let current_tool_alpha = 1;
 let current_tool_secondary_color = "#FFFFFF"
 let current_tool_buffer = [];
 let buttons_held = new Set();
+let unsaved_changes_warning = false;
 
 function zipEditorInit() {
 	document.body.innerHTML += 
@@ -33,7 +34,6 @@ function zipEditorInit() {
 				<p></p>
 				<p class="unsavedchanges"> (Unsaved Changes)</p>
 				<textarea spellcheck="false" oninput="textUnsavedChanges()"></textarea>
-				<button class="savechangesbutton" onclick="textSaveChanges()" style="display:none">Save Changes</button>
 			</div>
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
@@ -63,6 +63,7 @@ function zipEditorInit() {
 					<canvas class="tempcanvas"></canvas>
 				</div>
 			</div>
+			<button class="savechangesbutton" onclick="textSaveChanges()" style="display:none">Save Changes</button>
 		</div>
 		<input id="zipinput" type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
@@ -319,10 +320,9 @@ function drawBuffer(temp, colorSlot) {
 	context.globalAlpha = 1;
 }
 
-var unsaved_changes_warning = false;
 function textUnsavedChanges() {
 	unsaved_changes_warning = true;
-	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	const save_button = document.querySelector('.ze .main .savechangesbutton');
 	save_button.style.display = 'block';
 	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
 	unsaved_warning.style.display = 'inline';
@@ -331,14 +331,14 @@ function textSaveChanges() {
 	unsaved_changes_warning = false;
 	const textarea = document.querySelector('.ze .main .textedit textarea');
 	loaded_text_files[textarea.getAttribute('path')] = textarea.value;
-	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	const save_button = document.querySelector('.ze .main .savechangesbutton');
 	save_button.style.display = 'none';
 	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
 	unsaved_warning.style.display = 'none';
 }
 function textDiscardChanges() {
 	unsaved_changes_warning = false;
-	const save_button = document.querySelector('.ze .main .textedit .savechangesbutton');
+	const save_button = document.querySelector('.ze .main .savechangesbutton');
 	save_button.style.display = 'none';
 	const unsaved_warning = document.querySelector('.ze .main .textedit .unsavedchanges');
 	unsaved_warning.style.display = 'none';
