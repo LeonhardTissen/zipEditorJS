@@ -13,8 +13,12 @@ function zipEditorInit() {
 				</svg>
 			</div>
 		</div>
-		<div class="sidebar">
-	
+		<div class="sidebar"></div>
+		<div class="main">
+			<div class="textedit">
+				<p></p>
+				<textarea spellcheck="false" style="display:none;" oninput="raw_files[this.getAttribute('path')] = this.value;"></textarea>
+			</div>
 		</div>
 		<input type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
@@ -36,6 +40,8 @@ function zipEditorClose() {
 	}, 500)
 }
 
+
+let raw_files;
 let loadedZip;
 let zipFileObject;
 let sortedFilePaths;
@@ -45,6 +51,7 @@ function zipEditorImportZip() {
 	for (let i = 0, f; f = files[i]; i++) {
 		loadedZip = new JSZip();
 		zipFileObject = {}
+		raw_files = {}
 		document.querySelector('.sidebar').innerHTML = '';
 		loadedZip.loadAsync(f).then(function (zip) {
 			const folders = new Set();
@@ -69,38 +76,67 @@ function zipEditorImportZip() {
 				document.querySelector(destination).innerHTML += `
 				<div class="zipEditorFolder ${folderName}" onclick="toggleFolder(this)" style="height:30px">
 					<p class="zipEditorFolderText">${folderName}</p>
-					<svg height="2500" width="25">
+					<svg height="10000" width="25">
 						<line x1="4" y1="4" x2="21" y2="4" style="stroke:#555; stroke-width:3; stroke-linecap:round" />
-						<line x1="21" y1="4" x2="21" y2="2500" style="stroke:#555; stroke-width:3; stroke-linecap:round" />
+						<line x1="21" y1="4" x2="21" y2="10000" style="stroke:#555; stroke-width:3; stroke-linecap:round" />
 					</svg>
 				</div>
 				`
 			}
 			for (const [key, value] of Object.entries(zip.files)) {
 				const itemPath = key.split("/")
-				if (itemPath[itemPath.length - 1].endsWith('.png') && itemPath[0] !== "__MACOSX") {
-					const image = key;
-					const imagePathArray = image.split("/");
-					const imageName = imagePathArray.pop()
-					var prefixDot = "";
-					if (imagePathArray.length) {
-						prefixDot = " ."
+				if (itemPath[0] !== "__MACOSX") {
+					const temp = itemPath[itemPath.length - 1].split(".");
+					itemExtension = temp[temp.length-1]
+					if (['png','jpeg','jpg'].includes(itemExtension)) {
+						const imagePathString = key;
+						const imagePathArray = imagePathString.split("/");
+						const imageName = imagePathArray.pop()
+						var prefixDot = "";
+						if (imagePathArray.length) {
+							prefixDot = " ."
+						}
+						const destinationPath = '.ze .sidebar' + prefixDot + imagePathArray.join(" .") + ' .images'
+						if (document.querySelector(destinationPath) == null) {
+							document.querySelector(destinationPath.replace('.images', '')).innerHTML += 
+							`<div class="images"></div>`
+						}
+						loadedZip.file(imagePathString).async("blob").then(function(blob) {
+							document.querySelector(destinationPath).innerHTML += 
+							`<img path="${imagePathString}" name="${imageName}" src="${URL.createObjectURL(blob)}">`
+						})
+					} else if (['txt','json','html','js','css'].includes(itemExtension)) {
+						const filePathString = key;
+						const filePathArray = filePathString.split("/");
+						const fileName = filePathArray.pop()
+						var prefixDot = "";
+						if (filePathArray.length) {
+							prefixDot = " ."
+						}
+						const destinationPath = '.ze .sidebar' + prefixDot + filePathArray.join(" .")
+						loadedZip.file(filePathString).async("blob").then(function(blob) {
+							blob.text().then(function (text) {
+								raw_files[filePathString] = text;
+								document.querySelector(destinationPath).innerHTML += 
+								`<p path="${filePathString}" onclick="let path=this.getAttribute('path');initializeTextarea(raw_files[path],path)" class="zipEditorFileName">${fileName}</p>`
+							})
+						})
 					}
-					const destinationPath = '.ze .sidebar' + prefixDot + imagePathArray.join(" .") + ' .images'
-					if (document.querySelector(destinationPath) == null) {
-						document.querySelector(destinationPath.replace('.images', '')).innerHTML += 
-						`<div class="images"></div>`
-					}
-					loadedZip.file(image).async("blob").then(function(blob) {
-						document.querySelector(destinationPath).innerHTML += 
-						`<img src="${URL.createObjectURL(blob)}">`
-					})
-				};
+				}
 			};
 		}, function () {
 			alert("Not a valid zip file")
 		});
 	}
+}
+
+function initializeTextarea(text,path) {
+	const textname = document.querySelector('.ze .main .textedit p')
+	textname.innerText = path;
+	const textarea = document.querySelector('.ze .main .textedit textarea');
+	textarea.value = text;
+	textarea.style.display = 'block';
+	textarea.setAttribute('path', path);
 }
 
 function blobToImage(blob) {
