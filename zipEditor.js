@@ -4,7 +4,9 @@ let loaded_text_files;
 let loaded_images;
 let current_tool = "pencil";
 let current_tool_size = 0.5;
-let current_tool_color = "#000"
+let current_tool_color = "#000000";
+let current_tool_alpha = 1;
+let current_tool_secondary_color = "#FFFFFF"
 let current_tool_buffer = [];
 let buttons_held = new Set();
 
@@ -35,7 +37,24 @@ function zipEditorInit() {
 			</div>
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
-				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()">
+				<div class="window">
+					<p>Pencil</p>
+					<div class="contents">
+						<svg height="30" width="30" class="brushsize">
+							<circle id="toolsize" fill="white" cx="15" cy="15" r="1"></circle>
+						</svg>
+						<input type="range" min="1" max="15" value="1" oninput="changeToolSize(this.value)">
+						<input type="color" oninput="current_tool_color=this.value" value="#000000">
+						<input type="color" oninput="current_tool_secondary_color=this.value" value="#FFFFFF">
+						<svg height="30" width="30" class="brushalpha">
+							<circle id="toolalpha" fill="white" fill-opacity="1" cx="15" cy="15" r="15"></circle>
+						</svg>
+						<input type="range" min="0" max="1" step="0.01" value="1" oninput="changeToolAlpha(this.value)" >
+					</div>
+				</div>
+				<div class="window">
+				</div>
+				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()" oncontextmenu="event.preventDefault()">
 					<canvas id="layer0"></canvas>
 					<canvas id="layer1"></canvas>
 					<canvas id="layer2"></canvas>
@@ -45,7 +64,7 @@ function zipEditorInit() {
 				</div>
 			</div>
 		</div>
-		<input type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
+		<input id="zipinput" type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
 	`
 	document.body.onkeydown = () => buttons_held.add(event.key);
@@ -69,7 +88,7 @@ if (localStorage.getItem('jwbpTheme') == 'dark') {
 }
 
 function zipEditorImport() {
-	document.querySelector('.ze input').click();
+	document.querySelector('.ze #zipinput').click();
 }
 
 function zipEditorClose() {
@@ -218,59 +237,86 @@ function moveCanvas() {
 }
 
 function canvasActionUp() {
-	if (event.which === 1) {
+	if ((event.which === 1 || event.which === 3) && !buttons_held.has(" ")) {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		const zoom = imgcanvas.getAttribute('zoom')
 		switch (current_tool) {
 			case "pencil":
-				drawBuffer(false)
+				const secondary = (event.which === 3)
+				drawBuffer(false, secondary)
 				break;
 		}
 	} 
 }
 function canvasActionDown() {
-	if (event.buttons === 1) {
+	if ((event.which === 1 || event.which === 3) && !buttons_held.has(" ")) {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		const zoom = imgcanvas.getAttribute('zoom')
+		const imgcontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+		const zoom = imgcontainer.getAttribute('zoom')
 		switch (current_tool) {
 			case "pencil":
-				if (event.buttons === 1) {
-					current_tool_buffer = [[event.layerX, event.layerY]];
+				if (event.which === 1 || event.which === 3) {
+					const rect = imgcanvas.getBoundingClientRect()
+					const x = (event.clientX - rect.left) / zoom;
+					const y = (event.clientY - rect.top) / zoom;
+					current_tool_buffer = [[x, y],[x+0.01,y+0.01]];
+					const secondary = (event.which === 3)
+					drawBuffer(true, secondary)
 				}
 				break;
 		}
 	}
 }
 function canvasActionMove() {
-	if (event.buttons === 1) {
+	console.log(event.buttons === 2)
+	if ((event.buttons === 1 || event.buttons === 2) && !buttons_held.has(" ")) {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		const zoom = imgcanvas.getAttribute('zoom')
+		const imgcontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+		const zoom = imgcontainer.getAttribute('zoom')
 		const tempcanvas = document.querySelector('.ze .main .imageedit .tempcanvas');
 
 		switch (current_tool) {
 			case "pencil":
-				if (event.buttons === 1) {
-					console.log(current_tool_buffer)
-					current_tool_buffer.push([event.layerX, event.layerY]);
+				if (event.buttons === 1 || event.buttons === 2) {
+					const rect = imgcanvas.getBoundingClientRect()
+					const x = (event.clientX - rect.left) / zoom;
+					const y = (event.clientY - rect.top) / zoom;
+					current_tool_buffer.push([x, y]);
+					const secondary = (event.buttons === 2)
+					drawBuffer(true, secondary)
 				}
-				drawBuffer(true)
 				break;
 		}
 	}
 }
-function drawBuffer(temp) {
+
+function changeToolSize(value) {
+	document.querySelector('.ze .main .imageedit .window .brushsize circle').setAttribute('r', value);
+	current_tool_size = value;
+}
+function changeToolAlpha(value) {
+	document.querySelector('.ze .main .imageedit .window .brushalpha circle').setAttribute('fill-opacity', value);
+	current_tool_alpha = value;
+}
+
+function drawBuffer(temp, colorSlot) {
 	const context = (temp ? tempctx : ctx)
 	tempctx.clearRect(0, 0, 10000, 10000)
-	context.strokeStyle = current_tool_color;
+	context.strokeStyle = (colorSlot ? current_tool_secondary_color : current_tool_color)
+	context.globalAlpha = current_tool_alpha;
 	context.beginPath();
 	context.lineCap = "round";
-	context.moveTo(current_tool_buffer[0][0]+0.5,current_tool_buffer[0][1]+0.5)
+	context.lineJoin = "round";
+	context.moveTo(current_tool_buffer[0][0],current_tool_buffer[0][1])
 	for (var i = 1; i < current_tool_buffer.length; i ++) {
-		context.lineTo(current_tool_buffer[i][0]+0.5,current_tool_buffer[i][1]+0.5)
+		context.lineTo(current_tool_buffer[i][0],current_tool_buffer[i][1])
 	}
 	context.lineWidth = current_tool_size;
 	context.stroke()
 	context.stroke()
+	if (!temp) {
+		current_tool_buffer = []
+	}
+	context.globalAlpha = 1;
 }
 
 var unsaved_changes_warning = false;

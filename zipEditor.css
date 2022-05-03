@@ -6,7 +6,7 @@
 	--zedFont: #000;
 	--zedLightFont: #555;
 	--zedDanger: #f00;
-	--zedInvert: 0.4;
+	--zedInvert: 1;
 }
 :root[theme="dark"] {
 	--zedMain: #202020;
@@ -143,6 +143,31 @@
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
+}
+.ze .main .imageedit .window {
+	width: 200px;
+	position: fixed;
+	left: 450px;
+	top: 100px;
+	background-color: var(--zedDarker);
+	padding: 5px;
+	z-index: 999;
+}
+.ze .main .imageedit .window p {
+	font-size: 25px;
+}
+.ze .main .imageedit .window .contents input[type="range"] {
+	vertical-align: top;
+	height: 30px;
+}
+.ze .main .imageedit .window .contents input[type="color"] {
+	height: 30px;
+	width: 95px;
+	padding: 0;
+	border: 0;
+}
+.ze .main .imageedit .window .contents svg {
+	filter: invert(var(--zedInvert));
 }
 .ze .main .imageedit .canvascontainer {
 	position: absolute;
