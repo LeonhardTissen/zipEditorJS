@@ -96,19 +96,19 @@
 	width: 100%;
 	height: 100%;
 }
-.ze .main .textedit p {
+.ze .main .filepathname {
 	font-size: 15px;
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
 	display: inline;
 }
-.ze .main .textedit .unsavedchanges {
+.ze .main .unsavedchanges {
 	font-size: 15px;
 	margin: 0;
 	color: var(--zedDanger);
 	pointer-events: none;
-	display: inline;
+	display: none;
 }
 .ze .main .textedit textarea {
 	width: 100%;
@@ -136,12 +136,6 @@
 	position: relative;
 	overflow: hidden;
 }
-.ze .main .imageedit p {
-	font-size: 15px;
-	margin: 0;
-	color: var(--zedLightFont);
-	pointer-events: none;
-}
 .ze .main .imageedit .window {
 	width: 200px;
 	position: fixed;
@@ -151,6 +145,7 @@
 }
 .ze .main .imageedit .window p {
 	font-size: 25px;
+	margin: 0;
 }
 .ze .main .imageedit .window button {
 	width: 34px;
