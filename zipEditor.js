@@ -120,12 +120,6 @@ function keyDown() {
 		case "4":
 			selectTool('Selection');
 			break;
-		case "c":
-			console.log(event)
-			if (event.ctrlKey) {
-				copySelectionToClipboard();
-			}
-			break;
 		case "s":
 			if (event.ctrlKey) {
 				event.preventDefault();
@@ -371,21 +365,6 @@ function deleteSelection() {
 	if (selectionbox) {
 		selectionbox.remove()
 		current_selection = undefined;
-	}
-}
-function copySelectionToClipboard() {
-	if (current_selection) {
-		const tempcvs = document.createElement('canvas');
-		const tempctx = tempcvs.getContext('2d');
-		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
-		const s = current_selection;
-		tempcvs.width = s.w;
-		tempcvs.height = s.h;
-		tempctx.drawImage(imgcanvas, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
-		tempcvs.toBlob(function(blob) {
-			const item = new ClipboardItem({ "image/png": blob });
-			navigator.clipboard.write([item]); 
-		});
 	}
 }
 
