@@ -18,6 +18,22 @@
 	--zedDanger: #f00;
 	--zedInvert: 0;
 }
+::-webkit-scrollbar {
+	width: 7px;
+}
+::-webkit-scrollbar-track {
+	background-color: var(--zedMain);
+}
+::-webkit-scrollbar-thumb {
+	background-color: var(--zedFont);
+}
+::-webkit-scrollbar-thumb:hover {
+	background-color: var(--zedLightFont);
+}
+html {
+	scrollbar-color: var(--zedFont) var(--zedMain);
+  	scrollbar-width: thin;
+}
 @font-face {
 	font-family: "Montserrat";
 	src: url("Montserrat-VF.woff2");
@@ -194,6 +210,7 @@
 	height: 34px;
 	background-color: transparent;
 	border-radius: 0;
+	outline: 0;
 }
 .ze .main .imageedit .window .selectedtool {
 	background-color: var(--zedLightFont);
@@ -222,6 +239,7 @@
 	width: 95px;
 	padding: 0;
 	border: 0;
+	background-color: transparent;
 }
 .ze .main .imageedit .window .contents svg #toolsize {
 	filter: invert(var(--zedInvert));
@@ -284,6 +302,7 @@
 	margin: 2px;
 	max-height: 60px;
 	max-width: 60px;
+	image-rendering: -webkit-optimize-contrast;
 }
 .zipEditorFolder svg {
 	position: absolute;
