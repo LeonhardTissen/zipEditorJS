@@ -313,7 +313,7 @@ function canvasActionDown() {
 					pixelctx.drawImage(imgcanvas, x, y, 1, 1, 0, 0, 1, 1)
 					const p = pixelctx.getImageData(0,0,1,1).data;
 					changeToolColor(rgbToHex(p), (event.which === 3))
-					changeToolAlpha(p[3])
+					changeToolAlpha(p[3] / 255)
 				}
 				break;
 		}
