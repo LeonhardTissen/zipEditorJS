@@ -3,7 +3,7 @@ let tempctx;
 let loaded_text_files;
 let loaded_images;
 let current_tool = "Pencil";
-let current_tool_size = 0.5;
+let current_tool_size = 1;
 let current_tool_color = "#000000";
 let current_tool_alpha = 1;
 let current_tool_secondary_color = "#FFFFFF"
@@ -475,7 +475,6 @@ function drawBuffer(temp, colorSlot) {
 		context.lineTo(current_tool_buffer[i][0],current_tool_buffer[i][1])
 	}
 	context.lineWidth = current_tool_size;
-	context.stroke()
 	context.stroke()
 	if (!temp) {
 		current_tool_buffer = []
