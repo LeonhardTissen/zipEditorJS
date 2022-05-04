@@ -296,6 +296,12 @@ function canvasActionUp() {
 				const secondary = (event.which === 3)
 				drawBuffer(false, secondary)
 				break;
+			case "Selection":
+				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
+				if (oldselectionbox && (oldselectionbox.style.width == "0px" || oldselectionbox.style.height == "0px")) {
+					oldselectionbox.remove()
+				}
+				break;
 		}
 	} 
 }
@@ -349,6 +355,8 @@ function canvasActionDown() {
 					const selectionbox = document.createElement('div')
 					selectionbox.style.left = Math.round(x) + "px";
 					selectionbox.style.top = Math.round(y) + "px";
+					selectionbox.style.width = "0px";
+					selectionbox.style.height = "0px"
 					selectionbox.setAttribute('x', x)
 					selectionbox.setAttribute('y', y)
 					selectionbox.classList.add('selection')
