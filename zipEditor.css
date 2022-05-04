@@ -158,6 +158,9 @@
 	background-color: transparent;
 	border-radius: 0;
 }
+.ze .main .imageedit .window .selectedtool {
+	background-color: var(--zedLightFont);
+}
 .ze .main .imageedit .window .pencil {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAG1SURBVEhL7Zcxa8JAGIavaaiNggQMBERcnC10cZDOYodUhyrYoQ52E1zEoaMU/4SzkxZEO9V/UAwdnQodBKGUdohgIF68fl+0pYKllHAptD7wet53p493ES+Sv4i8aj0lDaGQE6fnEUeiKM6SyeQcntsQ/BDccaSFQoH5/X6maZolCMIU68thPqxJa7Ua63a7rFqtmpvku6vWLSgd5HI5qdfrkXK5TGCrnYFoNCqqqroYDodnjLE7KD1iXcAHl3wpRUajEWm1WvvZbHYPugOIinW34m+ljUaDpFIp0u/38YtWgjw5gy7YeE3fA0KnjuM4D+afLl/mjq10K91Kf8T/kaY9lyqKcggNy+fzi1AoxFW6dizG4/GSLMsHuq5LlUqFJBKJndXQxw9+JpMhnU7HpJSeQ/l6OeqSWCx222w2p+12exEMBnGFNrft/UwgEDAmkwmFA5uhHPq0Xq9T3HZuUuAK3nhumqYjRkBOJUmyisWizUuKPEBwldZ4PH4xDMOCw/01EoncYx1ygZN4gDdkKMDYPp9vFg6Hdbi2l9A/hnBBhOCtyTPkBoKrw5on/MpfDo8h5A05DcH2ntANhQAAAABJRU5ErkJggg==);
 }

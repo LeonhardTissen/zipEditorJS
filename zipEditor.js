@@ -55,7 +55,7 @@ function zipEditorInit() {
 				<div class="window" style="left:690px;top:100px;" onmousedown="startWindowDrag(this);">
 					<p>Tools</p>
 					<div class="contents">
-						<button class="pencil" onclick="selectTool('Pencil')"></button>
+						<button class="pencil selectedtool" onclick="selectTool('Pencil')"></button>
 						<button class="eraser" onclick="selectTool('Eraser')"></button>
 						<button class="eyedropper" onclick="selectTool('Eyedropper')"></button>
 					</div>
@@ -75,8 +75,8 @@ function zipEditorInit() {
 		<input id="zipinput" type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
 	`
-	document.body.onkeydown = () => buttons_held.add(event.key);
-	document.body.onkeyup = () => buttons_held.delete(event.key);
+	document.body.onkeydown = keyDown;
+	document.body.onkeyup = keyUp;;
 	setTimeout(function() {
 		document.querySelector('.ze').style.top = 0;
 	}, 1)
@@ -93,6 +93,30 @@ function toggleTheme() {
 document.documentElement.setAttribute('theme', 'main');
 if (localStorage.getItem('jwbpTheme') == 'dark') {
 	toggleTheme()
+}
+
+function keyDown() {
+	switch (event.key) {
+		case "1":
+			selectTool('Pencil');
+			break;
+		case "2":
+			selectTool('Eraser');
+			break;
+		case "3":
+			selectTool('Eyedropper');
+			break;
+		case " ":
+			buttons_held.add(event.key);
+			break;
+	}
+}
+function keyUp() {
+	switch (event.key) {
+		case " ":
+			buttons_held.delete(event.key);
+			break;
+	}
 }
 
 function adjustPxString(str, diff) {
@@ -378,6 +402,8 @@ function rgbToHex(rgb) {
 function selectTool(tool) {
 	current_tool = tool;
 	document.querySelector('.ze .main .imageedit .currenttooltext').innerText = tool;
+	document.querySelector('.ze .main .imageedit .selectedtool').classList.remove('selectedtool')
+	document.querySelector('.ze .main .imageedit .' + tool.toLowerCase()).classList.add('selectedtool');
 }
 function changeToolColor(value, secondary) {
 	if (!secondary) {
