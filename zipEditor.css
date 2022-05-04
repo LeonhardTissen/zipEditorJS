@@ -37,6 +37,37 @@
 	color: var(--zedFont);
 	user-select: none;
 }
+.ze .loading {
+	background-color: #000B;
+	width: 100vw;
+	height: 100vh;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 999;
+	text-align: center;
+}
+.ze .loading h1 {
+	font-size: 60px;
+	margin: 0;
+	margin-top: calc(30vh);
+	color: white;
+	animation: backandforth 1s ease-in-out alternate-reverse infinite;
+}
+.ze .loading h2 {
+	font-size: 30px;
+	margin: 0;
+	color: white;
+	animation: backandforth 1s ease-in-out alternate infinite;
+}
+@keyframes backandforth {
+	from {
+		transform: translateX(20px);
+	}
+	to {
+		transform: translateX(-20px);
+	}
+}
 .ze .topbar {
 	width: 100vw;
 	height: 50px;

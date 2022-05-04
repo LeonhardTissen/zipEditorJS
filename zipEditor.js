@@ -2,6 +2,7 @@ let ctx;
 let tempctx;
 let loaded_text_files;
 let loaded_images;
+let loaded_zip_name;
 let current_tool = "Pencil";
 let current_tool_size = 1;
 let current_tool_color = "#000000";
@@ -12,11 +13,17 @@ let current_view_type;
 let buttons_held = new Set();
 let unsaved_changes_warning = false;
 let undo_history;
+let generated_zip;
+let generated_zip_remaining_images;
 
 function zipEditorInit() {
 	document.body.innerHTML += 
 	`
 	<div class="ze" style="top:100vh" onmouseup="releaseWindows();" onmousemove="moveWindows();">
+		<div class="loading" style="display:none;">
+			<h1>Please wait...</h1>
+			<h2>This may take a few seconds.</h2>
+		</div>
 		<div class="topbar">
 			<button class="button" onclick="zipEditorImport()">Import</button>
 			<button class="button" onclick="zipEditorExport()">Export</button>
@@ -158,6 +165,33 @@ function moveWindows() {
 function zipEditorImport() {
 	document.querySelector('.ze #zipinput').click();
 }
+function zipEditorExport() {
+	document.querySelector('.ze .loading').style.display = 'block'
+	generated_zip = new JSZip();
+	generated_zip_remaining_images = Object.keys(loaded_images).length;
+	for (let [key, value] of Object.entries(loaded_text_files)) {
+    	generated_zip.file(key, value)
+	}
+	for (let [key, value] of Object.entries(loaded_images)) {
+    	const file = fetch(value)
+    	.then(r => r.blob())
+    	.then(blobFile => new File([blobFile], key.split("/")[key.split("/").length-1], { type: "image/png" }))
+    	.then((blobFile) => {
+    		generated_zip.file(key, blobFile)
+    		zipEditorAddLoading();
+    	})
+	}
+}
+function zipEditorAddLoading() {
+	generated_zip_remaining_images --;
+	if (generated_zip_remaining_images == 0) {
+		generated_zip.generateAsync({type:"blob"})
+		.then((content) => {
+			saveAs(content, loaded_zip_name);
+			document.querySelector('.ze .loading').style.display = 'none'
+		});
+	}
+}
 
 function zipEditorClose() {
 	document.querySelector('.ze').style.top = "100vh"
@@ -167,10 +201,12 @@ function zipEditorClose() {
 }
 
 function zipEditorImportZip() {
+	current_view_type = undefined;
+	closeAllTools()
 	const files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
-
 	for (let i = 0, f; f = files[i]; i++) {
 		const loadedZip = new JSZip();
+		loaded_zip_name = f.name;
 		loaded_text_files = {}
 		loaded_images = {}
 		document.querySelector('.sidebar').innerHTML = '';
@@ -572,6 +608,9 @@ function initializeTextarea(text,path) {
 }
 
 function closeAllTools() {
+	const filepathname = document.querySelector('.ze .main .filepathname')
+	filepathname.innerText = "";
+	discardChanges()
 	const textwindow = document.querySelector('.ze .main .textedit')
 	textwindow.style.display = 'none';
 	const imgwindow = document.querySelector('.ze .main .imageedit')
