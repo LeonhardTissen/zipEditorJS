@@ -9,6 +9,7 @@ let current_tool_color = "#000000";
 let current_tool_alpha = 1;
 let current_tool_secondary_color = "#FFFFFF"
 let current_tool_buffer = [];
+let current_selection;
 let current_view_type;
 let buttons_held = new Set();
 let unsaved_changes_warning = false;
@@ -119,8 +120,14 @@ function keyDown() {
 		case "4":
 			selectTool('Selection');
 			break;
+		case "c":
+			console.log(event)
+			if (event.ctrlKey) {
+				copySelectionToClipboard();
+			}
+			break;
 		case "s":
-			if (buttons_held.has("Control")) {
+			if (event.ctrlKey) {
 				event.preventDefault();
 				if (unsaved_changes_warning) {
 					saveChanges();
@@ -128,13 +135,12 @@ function keyDown() {
 			}
 			break;
 		case "z":
-			if (buttons_held.has("Control")) {
+			if (event.ctrlKey) {
 				event.preventDefault();
 				goBackToLastSnapshot();
 			}
 			break;
 		case " ":
-		case "Control":
 			buttons_held.add(event.key);
 			break;
 	}
@@ -142,7 +148,6 @@ function keyDown() {
 function keyUp() {
 	switch (event.key) {
 		case " ":
-		case "Control":
 			buttons_held.delete(event.key);
 			break;
 	}
@@ -312,8 +317,9 @@ function checkIfSaved() {
 }
 
 function initializeImageEditor(blob,path) {
-	discardChanges()
+	discardChanges();
 	current_view_type = "Image";
+	deleteSelection();
 	const imgwindow = document.querySelector('.ze .main .imageedit');
 	imgwindow.style.display = 'block';
 	imgwindow.setAttribute('path', path);
@@ -360,6 +366,29 @@ function moveCanvas() {
 	}
 }
 
+function deleteSelection() {
+	const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
+	if (selectionbox) {
+		selectionbox.remove()
+		current_selection = undefined;
+	}
+}
+function copySelectionToClipboard() {
+	if (current_selection) {
+		const tempcvs = document.createElement('canvas');
+		const tempctx = tempcvs.getContext('2d');
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		const s = current_selection;
+		tempcvs.width = s.w;
+		tempcvs.height = s.h;
+		tempctx.drawImage(imgcanvas, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
+		tempcvs.toBlob(function(blob) {
+			const item = new ClipboardItem({ "image/png": blob });
+			navigator.clipboard.write([item]); 
+		});
+	}
+}
+
 function canvasActionUp() {
 	if ((event.which === 1 || event.which === 3) && !buttons_held.has(" ")) {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
@@ -375,7 +404,7 @@ function canvasActionUp() {
 			case "Selection":
 				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 				if (oldselectionbox && (oldselectionbox.style.width == "0px" || oldselectionbox.style.height == "0px")) {
-					oldselectionbox.remove()
+					deleteSelection()
 				}
 				break;
 		}
@@ -424,8 +453,8 @@ function canvasActionDown() {
 				break;
 			case "Selection":
 				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
-				if (oldselectionbox) {
-					oldselectionbox.remove()
+				if (current_selection) {
+					deleteSelection()
 				}
 				if (event.which === 1 || event.which === 3) {
 					const selectionbox = document.createElement('div')
@@ -436,6 +465,7 @@ function canvasActionDown() {
 					selectionbox.setAttribute('x', x)
 					selectionbox.setAttribute('y', y)
 					selectionbox.classList.add('selection')
+					current_selection = {type: "rect", x: Math.round(x), y: Math.round(y), w: 0, h: 0}
 					imgcontainer.appendChild(selectionbox);
 				}
 				break;
@@ -490,13 +520,18 @@ function canvasActionMove() {
 			case "Selection":
 				if (event.which === 1 || event.which === 3) {
 					const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection')
-					if (selectionbox) {
+					if (current_selection) {
 						const sx = selectionbox.getAttribute('x')
 						const sy = selectionbox.getAttribute('y')
-						selectionbox.style.left = Math.round(Math.min(x, sx)) + "px";
-						selectionbox.style.top = Math.round(Math.min(y, sy)) + "px";
-						selectionbox.style.width = Math.round(Math.abs(x - sx)) + "px";
-						selectionbox.style.height = Math.round(Math.abs(y - sy)) + "px";
+						const nx = Math.round(Math.min(x, sx));
+						const ny = Math.round(Math.min(y, sy));
+						const nw = Math.round(Math.abs(Math.round(x) - sx));
+						const nh = Math.round(Math.abs(Math.round(y) - sy));
+						selectionbox.style.left = nx + "px";
+						selectionbox.style.top = ny + "px";
+						selectionbox.style.width = nw + "px";
+						selectionbox.style.height = nh + "px";
+						current_selection = {type: "rect", x: nx, y: ny, w: nw, h: nh}
 					}
 				}
 				break;
@@ -513,6 +548,7 @@ function rgbToHex(rgb) {
 
 function selectTool(tool) {
 	current_tool = tool;
+	document.querySelector('.ze .main .imageedit .canvascontainer .cursor').style.display = (["Pencil","Eraser"].includes(tool) ? 'block' : 'none')
 	document.querySelector('.ze .main .imageedit .currenttooltext').innerText = tool;
 	document.querySelector('.ze .main .imageedit .selectedtool').classList.remove('selectedtool')
 	document.querySelector('.ze .main .imageedit .' + tool.toLowerCase()).classList.add('selectedtool');
@@ -543,6 +579,12 @@ function drawBuffer(temp, colorSlot) {
 	tempctx.clearRect(0, 0, 10000, 10000)
 	context.strokeStyle = (colorSlot ? current_tool_secondary_color : current_tool_color)
 	context.globalAlpha = current_tool_alpha;
+	if (current_selection) {
+		context.save();
+		context.beginPath()
+		context.rect(current_selection.x, current_selection.y, current_selection.w, current_selection.h);
+		context.clip();
+	}
 	context.beginPath();
 	context.lineCap = "round";
 	context.lineJoin = "round";
@@ -556,6 +598,9 @@ function drawBuffer(temp, colorSlot) {
 		current_tool_buffer = []
 	}
 	context.globalAlpha = 1;
+	if (current_selection) {
+		context.restore();
+	}
 }
 
 function takeImageSnapshot() {
