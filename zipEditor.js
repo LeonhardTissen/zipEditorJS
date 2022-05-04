@@ -298,7 +298,9 @@ function canvasActionDown() {
 					ctx.beginPath()
 					ctx.arc(x, y, current_tool_size / 2, 0, Math.PI * 2);
 					ctx.clip();
+					ctx.globalAlpha = current_tool_alpha;
 					ctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
+					ctx.globalAlpha = 1;
 					ctx.restore();
 				}
 				break;
