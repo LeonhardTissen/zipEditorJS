@@ -16,6 +16,7 @@ let unsaved_changes_warning = false;
 let undo_history;
 let generated_zip;
 let generated_zip_remaining_images;
+let awaiting_paste;
  
 function zipEditorInit() {
 	document.body.innerHTML += 
@@ -120,6 +121,21 @@ function keyDown() {
 		case "4":
 			selectTool('Selection');
 			break;
+		case "a":
+			if (event.ctrlKey) {
+				selectEntireCanvas()
+			}
+			break;
+		case "c":
+			if (event.ctrlKey) {
+				copySelectionToClipboard();
+			}
+			break;
+		case "v":
+			if (event.ctrlKey) {
+				pasteClipboardToCanvas();
+			}
+			break;
 		case "s":
 			if (event.ctrlKey) {
 				event.preventDefault();
@@ -127,6 +143,10 @@ function keyDown() {
 					saveChanges();
 				}
 			}
+			break;
+		case "Delete":
+		case "Backspace":
+			wipeCanvas();
 			break;
 		case "z":
 			if (event.ctrlKey) {
@@ -360,12 +380,77 @@ function moveCanvas() {
 	}
 }
 
+function selectEntireCanvas() {
+	deleteSelection()
+	const selectionbox = document.createElement('div')
+	const imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
+	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	selectionbox.style.left = "0px";
+	selectionbox.style.top = "0px";
+	selectionbox.style.width = imgcanvas.width + "px";
+	selectionbox.style.height = imgcanvas.height + "px"
+	selectionbox.setAttribute('x', 0)
+	selectionbox.setAttribute('y', 0)
+	selectionbox.classList.add('selection')
+	current_selection = {type: "rect", x: 0, y: 0, w: imgcanvas.width, h: imgcanvas.height}
+	imgcanvascontainer.appendChild(selectionbox);
+}
 function deleteSelection() {
 	const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 	if (selectionbox) {
 		selectionbox.remove()
 		current_selection = undefined;
 	}
+}
+function copySelectionToClipboard() {
+	if (current_selection) {
+		const tempcvs = document.createElement('canvas');
+		const tempctx = tempcvs.getContext('2d');
+		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+		const s = current_selection;
+		tempcvs.width = s.w;
+		tempcvs.height = s.h;
+		tempctx.drawImage(imgcanvas, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
+		const dataURL = tempcvs.toDataURL(0, 0, s.w, s.h);
+		console.log(dataURL)
+		navigator.clipboard.writeText(dataURL);
+	}
+}
+function pasteClipboardToCanvas() {
+	if (awaiting_paste) return;
+	const cursor = document.querySelector('.ze .main .imageedit .canvascontainer .cursor');
+	const cx = Math.round(cursor.style.left.replace('px',''))
+	const cy = Math.round(cursor.style.top.replace('px',''))
+	try {
+		navigator.clipboard.readText().then(clipText => drawDataOnCanvas(data, cx, cy))
+	} catch (err) {
+		const input = document.createElement('input');
+		awaiting_paste = true;
+		input.style.position = "fixed";
+		input.style.left = "0";
+		input.style.top = "0";
+		input.style.opacity = 0;
+		input.oninput = function() {
+			drawDataOnCanvas(this.value, cx, cy)
+			awaiting_paste = false;
+			this.remove()
+		}
+		document.querySelector('.ze').appendChild(input);
+		input.select();
+		setTimeout(function() {
+			input.remove();
+			awaiting_paste = false;
+		}, 1000)
+	}
+}
+function drawDataOnCanvas(data, x, y) {
+	const tempimg = document.createElement('img');
+	tempimg.src = data;
+	const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
+	const imgctx = imgcanvas.getContext('2d');
+	imgctx.clearRect(x, y, tempimg.width, tempimg.height)
+	imgctx.drawImage(tempimg, x, y)
+	takeImageSnapshot();
 }
 
 function canvasActionUp() {
@@ -579,6 +664,16 @@ function drawBuffer(temp, colorSlot) {
 	context.globalAlpha = 1;
 	if (current_selection) {
 		context.restore();
+	}
+}
+function wipeCanvas() {
+	if (current_selection) {
+		const imgcanvas = document.querySelector('.ze .main .imageedit .canvascontainer canvas');
+		const imgctx = imgcanvas.getContext('2d');
+		const s = current_selection;
+		imgctx.clearRect(s.x, s.y, s.w, s.h);
+		takeImageSnapshot();
+		deleteSelection();
 	}
 }
 

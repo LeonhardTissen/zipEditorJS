@@ -169,7 +169,8 @@ html {
 	display: none;
 }
 .ze .main .textedit textarea {
-	width: 100%;
+	width: calc(100% - 400px);
+	margin-left: 400px;
 	height: calc(100% - 30px);
 	color: var(--zedFont);
 	font-size: 18px;
