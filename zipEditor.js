@@ -15,7 +15,7 @@ let unsaved_changes_warning = false;
 let undo_history;
 let generated_zip;
 let generated_zip_remaining_images;
-
+ 
 function zipEditorInit() {
 	document.body.innerHTML += 
 	`
@@ -37,14 +37,16 @@ function zipEditorInit() {
 				</svg>
 			</div>
 		</div>
-		<div class="sidebar"></div>
 		<div class="main">
-			<p class="filepathname"></p><p class="unsavedchanges"> (Unsaved Changes)</p>
+			<div class="info">
+				<p class="filepathname"></p>
+				<p class="unsavedchanges"> (Unsaved Changes, press Ctrl+S to save)</p>
+			</div>
 			<div class="textedit" style="display:none;">
 				<textarea spellcheck="false" oninput="unsavedChanges()"></textarea>
 			</div>
-			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
-				<div class="window" style="left:450px;top:100px;" onmousedown="startWindowDrag(this);">
+			<div class="imageedit" onmousemove="moveCanvas()" style="display:none;" onwheel="zoomCanvas();event.preventDefault();" onscroll="zoomCanvas();event.preventDefault()">
+				<div class="window" style="left:410px;top:60px;" onmousedown="startWindowDrag(this);">
 					<p class="currenttooltext">Pencil</p>
 					<div class="contents">
 						<svg height="30" width="30" class="brushsize">
@@ -59,7 +61,7 @@ function zipEditorInit() {
 						<input type="range" min="0" max="1" step="0.01" value="1" class="alphainput" oninput="changeToolAlpha(this.value, true)" >
 					</div>
 				</div>
-				<div class="window" style="left:690px;top:100px;" onmousedown="startWindowDrag(this);">
+				<div class="window" style="left:410px;top:210px" onmousedown="startWindowDrag(this);">
 					<p>Tools</p>
 					<div class="contents">
 						<button class="pencil selectedtool" onclick="selectTool('Pencil')"></button>
@@ -76,11 +78,15 @@ function zipEditorInit() {
 			</div>
 			<button class="savechangesbutton" onclick="saveChanges()" style="display:none">Save Changes</button>
 		</div>
+		<div class="sidebar"></div>
+		<svg width="40" height="40" class="sidebarbutton" onclick="toggleSidebar()">
+			<polygon points="30,0 10,20 30,40" style="fill:white"/>
+		</svg>
 		<input id="zipinput" type="file" style="display:none" accept=".zip" onchange="zipEditorImportZip()">
 	</div>
 	`
 	document.body.onkeydown = keyDown;
-	document.body.onkeyup = keyUp;;
+	document.body.onkeyup = keyUp;
 	setTimeout(function() {
 		document.querySelector('.ze').style.top = 0;
 	}, 1)
@@ -159,6 +165,18 @@ function moveWindows() {
 	if (draggedWindow !== null) {
 		draggedWindow.style.left = adjustPxString(draggedWindow.style.left, event.movementX)
 		draggedWindow.style.top = adjustPxString(draggedWindow.style.top, event.movementY)
+	}
+}
+
+function toggleSidebar() {
+	const sidebar = document.querySelector('.ze .sidebar')
+	const sidebarbutton = document.querySelector('.ze .sidebarbutton')
+	if (sidebar.style.transform === "translateX(-350px)") {
+		sidebar.style.transform = ""
+		sidebarbutton.style.transform = "";
+	} else {
+		sidebar.style.transform = "translateX(-350px)"
+		sidebarbutton.style.transform = "rotateZ(180deg)";
 	}
 }
 
@@ -316,7 +334,7 @@ function initializeImageEditor(blob,path) {
 	})
 	imgcanvascontainer.style.width = image.width + "px";
 	imgcanvascontainer.style.height = image.height + "px";
-	imgcanvascontainer.style.left = (window.innerWidth - 400) / 2 - image.width / 2 + "px";
+	imgcanvascontainer.style.left =  (window.innerWidth + 400) / 2 - image.width / 2 + "px";
 	imgcanvascontainer.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
 	const imgzoom = Math.min(4, imgwindowmaxsize / Math.max(image.width, image.height) / 1.5);
 	imgcanvascontainer.setAttribute('zoom', imgzoom)

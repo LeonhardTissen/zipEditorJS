@@ -115,26 +115,37 @@
 	height: calc(100vh - 50px);
 	background-color: var(--zedDark);
 	overflow-y: scroll;
+	transition: transform 0.2s ease-out;
+}
+.ze .sidebarbutton {
+	position: absolute;
+	left: 0px;
+	top: calc(50vh - 20px);
+	cursor: pointer;
+	transition: transform 0.2s ease-out;
 }
 .ze .main {
 	position: absolute;
 	right: 0;
 	bottom: 0;
 	height: calc(100vh - 50px);
-	width: calc(100vw - 400px);
+	width: 100vw;
 }
 .ze .main .textedit {
 	width: 100%;
 	height: 100%;
 }
-.ze .main .filepathname {
+.ze .main .info {
+	text-align: right;
+}
+.ze .main .info .filepathname {
 	font-size: 15px;
 	margin: 0;
 	color: var(--zedLightFont);
 	pointer-events: none;
 	display: inline;
 }
-.ze .main .unsavedchanges {
+.ze .main .info .unsavedchanges {
 	font-size: 15px;
 	margin: 0;
 	color: var(--zedDanger);
