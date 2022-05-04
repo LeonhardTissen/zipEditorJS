@@ -308,9 +308,7 @@ function canvasActionDown() {
 					pixelcvs.width = 1;
 					pixelcvs.height = 1;
 					const pixelctx = pixelcvs.getContext('2d');
-					const x = Math.round((event.clientX - rect.left) / zoom);
-					const y = Math.round((event.clientY - rect.top) / zoom);
-					pixelctx.drawImage(imgcanvas, x, y, 1, 1, 0, 0, 1, 1)
+					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1)
 					const p = pixelctx.getImageData(0,0,1,1).data;
 					changeToolColor(rgbToHex(p), (event.which === 3))
 					changeToolAlpha(p[3] / 255)
@@ -350,6 +348,18 @@ function canvasActionMove() {
 					ctx.clip()
 					ctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
 					ctx.restore()
+				}
+				break;
+			case "Eyedropper":
+				if (event.buttons === 1 || event.buttons === 2) {
+					const pixelcvs = document.createElement('canvas');
+					pixelcvs.width = 1;
+					pixelcvs.height = 1;
+					const pixelctx = pixelcvs.getContext('2d');
+					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1)
+					const p = pixelctx.getImageData(0,0,1,1).data;
+					changeToolColor(rgbToHex(p), (event.buttons === 2))
+					changeToolAlpha(p[3] / 255)
 				}
 				break;
 		}
