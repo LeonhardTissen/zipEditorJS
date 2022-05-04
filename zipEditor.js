@@ -58,14 +58,11 @@ function zipEditorInit() {
 						<button class="pencil selectedtool" onclick="selectTool('Pencil')"></button>
 						<button class="eraser" onclick="selectTool('Eraser')"></button>
 						<button class="eyedropper" onclick="selectTool('Eyedropper')"></button>
+						<button class="selection" onclick="selectTool('Selection')"></button>
 					</div>
 				</div>
 				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()" oncontextmenu="event.preventDefault()">
 					<canvas id="layer0"></canvas>
-					<canvas id="layer1"></canvas>
-					<canvas id="layer2"></canvas>
-					<canvas id="layer3"></canvas>
-					<canvas id="layer4"></canvas>
 					<canvas class="tempcanvas"></canvas>
 					<div class="cursor"></div>
 				</div>
@@ -105,6 +102,9 @@ function keyDown() {
 			break;
 		case "3":
 			selectTool('Eyedropper');
+			break;
+		case "4":
+			selectTool('Selection');
 			break;
 		case " ":
 			buttons_held.add(event.key);
@@ -340,6 +340,21 @@ function canvasActionDown() {
 					changeToolAlpha(p[3] / 255)
 				}
 				break;
+			case "Selection":
+				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
+				if (oldselectionbox) {
+					oldselectionbox.remove()
+				}
+				if (event.which === 1 || event.which === 3) {
+					const selectionbox = document.createElement('div')
+					selectionbox.style.left = Math.round(x) + "px";
+					selectionbox.style.top = Math.round(y) + "px";
+					selectionbox.setAttribute('x', x)
+					selectionbox.setAttribute('y', y)
+					selectionbox.classList.add('selection')
+					imgcontainer.appendChild(selectionbox);
+				}
+				break;
 		}
 	}
 }
@@ -386,6 +401,19 @@ function canvasActionMove() {
 					const p = pixelctx.getImageData(0,0,1,1).data;
 					changeToolColor(rgbToHex(p), (event.buttons === 2))
 					changeToolAlpha(p[3] / 255)
+				}
+				break;
+			case "Selection":
+				if (event.which === 1 || event.which === 3) {
+					const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection')
+					if (selectionbox) {
+						const sx = selectionbox.getAttribute('x')
+						const sy = selectionbox.getAttribute('y')
+						selectionbox.style.left = Math.round(Math.min(x, sx)) + "px";
+						selectionbox.style.top = Math.round(Math.min(y, sy)) + "px";
+						selectionbox.style.width = Math.round(Math.abs(x - sx)) + "px";
+						selectionbox.style.height = Math.round(Math.abs(y - sy)) + "px";
+					}
 				}
 				break;
 		}

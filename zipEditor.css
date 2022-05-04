@@ -114,7 +114,7 @@
 	width: 100%;
 	height: calc(100% - 30px);
 	color: var(--zedFont);
-	font-size: 25px;
+	font-size: 18px;
 	background-color: var(--zedDarker);
 	font-family: "Consolas";
 	user-select: text;
@@ -170,6 +170,9 @@
 .ze .main .imageedit .window .eyedropper {
 	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAALqSURBVEhL1ZZfSFNRHMfvTef+qM3p/rDplpOQ6dpDGBRTJqaNiojeNiqoSIIhAwd7HTFw7KWexnovBJ09jL0FvbhBT+Kr9CKErTA0iNTN/Tn39j27Z4JmL907ow/8OOf3O2d89zt/fvdw/wqetUqhgV2UutxHWF3qthC73X4HDenu7t6FfeF5vtLR0RGVRltANpvle3t7p1UqVXl+fr4Cvwqrp9PpQ5vN9qOnp+cd/HY2/QjZSz06OhrY3Nx8Ew6H+fHxcRULNyCEcNFotFSv118Ui8XnLNxArrAF9jUYDIqBQKBNCh0HgkIkEqlA3Ax3X4py3DnW/i3f3G53PJfL8RsbGyKLHWNgYIA3GAw/0XVJEQm5wtzCwkLS5/O9TCaT4s7OjtDW9lviImJ0ZY/ts2zhubk53/r6ejiVSvHYT35ra4sgfJQ9VoJsb2+b0P0sRRTAYrFcV6vVpZWVFSKCeDxOcI3EWCwm4CSLiUSCYLyC0x1iP5EPFcU9PVhaWjqAplAoFEhnZ2e1v7//tUajqc3OzlapqMlkesx+Ih+n03mDZgrRfSqaz+crWq32sK+v7wEd7+rqomJ11iqDw+GYQUbl5eXlMhM9pKKoXI/YlCYXWCsfFIubVBSZliBKVldX96h/iqhyTE5O3qN7mMlkqkz0gC437uh9NkV5PB7PLSqK0ytAVKTL2/JMvV7vXZ1OV0GmNSZabe4pXKU/qxKnZFqmmZrN5odsivLQg0QzbRYH3FOB/omhoaEnbIryjI2N6VGByOLiIj1IjeKAO1mbmpqKwJddZv8IlnhmZGRkj4nWaObDw8NP4bdmT5vga/IKJXFtYmLiOzIXBgcHn7GhlqKF7UMwazQaA7indinceq7CdmHTDe+MaLdarR9CoVBJr9evwXdIYeU5eUIvY3kv+f1+rcvlom/k21JYeU4Ke/AyfI+W4ECdR6trRM8Aur8FvIXfokJ9Qv9aI3pG0H0NwK7ATn2y/sdw3C803DV/JXnKZgAAAABJRU5ErkJggg==);
 }
+.ze .main .imageedit .window .selection {
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAACJSURBVEhL7ZdLDoAwCAWLx9a1Xhv7GvoJ7poALpiEtpAmIy6IligICzOfLXOCiJ52EDH3QK5rOnbvSD47rk9x1/1CbkV3fDqW3QTtOLCAWjDtFqyOIfZmiPH+5WjG6ojv2JsUuxEvzgFiQQ6QEFLsxhDnALFgdfzj87YHcl3TsXtH8uBfGH9KeQHvSadR/qL2hwAAAABJRU5ErkJggg==)
+}
 .ze .main .imageedit .window .contents {
 	background-color: var(--zedMain);
 }
@@ -208,6 +211,12 @@
 	transform: translate(-50%, -50%);
 	border-radius: 50%;
 	background-color: #00000020;
+}
+.ze .main .imageedit .canvascontainer .selection {
+	position: absolute;
+	left: 0;
+	top: 0;
+	background-color: #0090FF80;
 }
 .zipEditorFolder {
 	padding-left: 25px;
