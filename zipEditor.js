@@ -2,7 +2,7 @@ let ctx;
 let tempctx;
 let loaded_text_files;
 let loaded_images;
-let current_tool = "pencil";
+let current_tool = "Pencil";
 let current_tool_size = 0.5;
 let current_tool_color = "#000000";
 let current_tool_alpha = 1;
@@ -38,24 +38,26 @@ function zipEditorInit() {
 			<div class="imageedit" onwheel="zoomCanvas()" onmousemove="moveCanvas()" style="display:none;">
 				<p></p>
 				<div class="window" style="left:450px;top:100px;" onmousedown="startWindowDrag(this);">
-					<p>Pencil</p>
+					<p class="currenttooltext">Pencil</p>
 					<div class="contents">
 						<svg height="30" width="30" class="brushsize">
 							<circle id="toolsize" fill="white" cx="15" cy="15" r="1"></circle>
 						</svg>
 						<input type="range" min="1" max="15" value="1" step="0.2" oninput="changeToolSize(this.value)">
-						<input type="color" oninput="current_tool_color=this.value" value="#000000">
-						<input type="color" oninput="current_tool_secondary_color=this.value" value="#FFFFFF">
+						<input type="color" class="colorinput" oninput="changeToolColor(this.value, false)" value="#000000">
+						<input type="color" class="secondarycolorinput" oninput="changeToolColor(this.value, true)" value="#FFFFFF">
 						<svg height="30" width="30" class="brushalpha">
 							<circle id="toolalpha" fill="black" fill-opacity="1" cx="15" cy="15" r="12"></circle>
 						</svg>
-						<input type="range" min="0" max="1" step="0.01" value="1" oninput="changeToolAlpha(this.value)" >
+						<input type="range" min="0" max="1" step="0.01" value="1" class="alphainput" oninput="changeToolAlpha(this.value, true)" >
 					</div>
 				</div>
 				<div class="window" style="left:690px;top:100px;" onmousedown="startWindowDrag(this);">
 					<p>Tools</p>
 					<div class="contents">
-						<p>Pencil</p>
+						<button class="pencil" onclick="selectTool('Pencil')"></button>
+						<button class="eraser" onclick="selectTool('Eraser')"></button>
+						<button class="eyedropper" onclick="selectTool('Eyedropper')"></button>
 					</div>
 				</div>
 				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()" oncontextmenu="event.preventDefault()">
@@ -266,7 +268,7 @@ function canvasActionUp() {
 	if ((event.which === 1 || event.which === 3) && !buttons_held.has(" ")) {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
 		switch (current_tool) {
-			case "pencil":
+			case "Pencil":
 				const secondary = (event.which === 3)
 				drawBuffer(false, secondary)
 				break;
@@ -278,22 +280,44 @@ function canvasActionDown() {
 		const imgcanvas = document.querySelector('.ze .main .imageedit canvas');
 		const imgcontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
 		const zoom = imgcontainer.getAttribute('zoom')
+		const rect = imgcanvas.getBoundingClientRect()
+		const x = (event.clientX - rect.left) / zoom;
+		const y = (event.clientY - rect.top) / zoom;
 		switch (current_tool) {
-			case "pencil":
+			case "Pencil":
 				if (event.which === 1 || event.which === 3) {
-					const rect = imgcanvas.getBoundingClientRect()
-					const x = (event.clientX - rect.left) / zoom;
-					const y = (event.clientY - rect.top) / zoom;
 					current_tool_buffer = [[x, y],[x+0.01,y+0.01]];
 					const secondary = (event.which === 3)
 					drawBuffer(true, secondary)
 				}
 				break;
+			case "Eraser":
+				if (event.which === 1 || event.which === 3) {
+					const ctx = imgcanvas.getContext('2d');
+					ctx.save();
+					ctx.beginPath()
+					ctx.arc(x, y, current_tool_size / 2, 0, Math.PI * 2);
+					ctx.clip();
+					ctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
+					ctx.restore();
+				}
+				break;
+			case "Eyedropper":
+				if (event.which === 1 || event.which === 3) {
+					const pixelcvs = document.createElement('canvas');
+					pixelcvs.width = 1;
+					pixelcvs.height = 1;
+					const pixelctx = pixelcvs.getContext('2d');
+					const x = Math.round((event.clientX - rect.left) / zoom);
+					const y = Math.round((event.clientY - rect.top) / zoom);
+					pixelctx.drawImage(imgcanvas, x, y, 1, 1, 0, 0, 1, 1)
+					const p = pixelctx.getImageData(0,0,1,1).data;
+					changeToolColor(rgbToHex(p), (event.which === 3))
+					changeToolAlpha(p[3])
+				}
+				break;
 		}
 	}
-}
-function updateCursor(x,y) {
-
 }
 
 function canvasActionMove() {
@@ -310,22 +334,56 @@ function canvasActionMove() {
 	cursor.style.height = current_tool_size + "px";
 	if ((event.buttons === 1 || event.buttons === 2) && !buttons_held.has(" ")) {
 		switch (current_tool) {
-			case "pencil":
+			case "Pencil":
 				if (event.buttons === 1 || event.buttons === 2) {
 					current_tool_buffer.push([x, y]);
 					const secondary = (event.buttons === 2)
 					drawBuffer(true, secondary)
 				}
 				break;
+			case "Eraser":
+				if (event.buttons === 1 || event.buttons === 2) {
+					const ctx = imgcanvas.getContext('2d');
+					ctx.save()
+					ctx.beginPath()
+					ctx.arc(x, y, current_tool_size / 2, 0, Math.PI * 2);
+					ctx.clip()
+					ctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
+					ctx.restore()
+				}
+				break;
 		}
 	}
 }
+function componentToHex(c) {
+  const hex = c.toString(16);
+  return hex.length == 1 ? "0" + hex : hex;
+}
+function rgbToHex(rgb) {
+  return "#" + componentToHex(rgb[0]) + componentToHex(rgb[1]) + componentToHex(rgb[2]);
+}
 
+function selectTool(tool) {
+	current_tool = tool;
+	document.querySelector('.ze .main .imageedit .currenttooltext').innerText = tool;
+}
+function changeToolColor(value, secondary) {
+	if (!secondary) {
+		current_tool_color = value;
+		document.querySelector('.ze .main .imageedit .colorinput').value = value;
+	} else {
+		current_tool_secondary_color = value;
+		document.querySelector('.ze .main .imageedit .secondarycolorinput').value = value;
+	}
+}
 function changeToolSize(value) {
 	document.querySelector('.ze .main .imageedit .window .brushsize circle').setAttribute('r', value);
 	current_tool_size = value;
 }
-function changeToolAlpha(value) {
+function changeToolAlpha(value, selfinflicted) {
+	if (!selfinflicted) {
+		document.querySelector('.ze .main .imageedit .window .alphainput').value = value;
+	}
 	document.querySelector('.ze .main .imageedit .window .brushalpha #toolalpha').setAttribute('fill-opacity', value);
 	current_tool_alpha = value;
 }
