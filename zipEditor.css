@@ -84,6 +84,63 @@ html {
 		transform: translateX(-20px);
 	}
 }
+.ze .effects {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 1000;
+	background-color: #000B;
+}
+.ze .effects .window {
+	position: absolute;
+	left: calc(50vw - 250px);
+	top: calc(50vh - 250px);
+	width: 500px;
+	height: 500px;
+	z-index: 1000;
+	background-color: #000B;
+	text-align: center;
+}
+.ze .effects .window {
+	position: absolute;
+	left: calc(50vw - 250px);
+	top: calc(50vh - 250px);
+	width: 500px;
+	height: 500px;
+	z-index: 1000;
+	background-color: var(--zedDarkest);
+	text-align: center;
+}
+.ze .effects .title {
+	margin: 5px;
+}
+.ze .effects .inputs {
+	margin: 2px;
+	padding: 20px;
+	text-align: center;
+}
+.ze .effects .inputs p {
+	font-size: 18px;
+	margin: 2px;
+}
+.ze .effects canvas {
+	max-width: 200px;
+	max-height: 200px;
+	display: inline-block;
+	border: 1px solid var(--zedFont);
+}
+.ze .effects .apply {
+	font-size: 30px;
+	background-color: transparent;
+	color: var(--zedFont);
+	border: 1px solid var(--zedFont);
+	cursor: pointer;
+}
+.ze .effects .apply:active {
+	background-color: var(--zedMain);
+}
 .ze .topbar {
 	width: 100vw;
 	height: 50px;
@@ -101,7 +158,7 @@ html {
 	height: 50px;
 	cursor: pointer;
 }
-.ze .topbar .closebutton {
+.ze .closebutton {
 	background-color: var(--zedDark);
 	position: absolute;
 	right: 0;
@@ -110,7 +167,7 @@ html {
 	height: 50px;
 
 	cursor: pointer;}
-.ze .topbar .closebutton:hover {
+.ze .closebutton:hover {
 	background-color: var(--zedDanger);
 }
 .ze .topbar .darkbutton {
@@ -206,7 +263,7 @@ html {
 	font-size: 25px;
 	margin: 0;
 }
-.ze .main .imageedit .window button {
+.ze .main .imageedit .window .squarebutton {
 	width: 34px;
 	height: 34px;
 	background-color: transparent;
@@ -244,6 +301,18 @@ html {
 	padding: 0;
 	border: 0;
 	background-color: transparent;
+}
+.ze .main .imageedit .window .contents .effectsbutton {
+	font-size: 20px;
+	background-color: var(--zedDark);
+	color: var(--zedFont);
+	border: 1px solid var(--zedLightFont);
+	cursor: pointer;
+}
+.ze .main .imageedit .window .contents .effectsbutton:active {
+	font-size: 20px;
+	background-color: var(--zedLightFont);
+	color: var(--zedFont);
 }
 .ze .main .imageedit .window .contents svg #toolsize {
 	filter: invert(var(--zedInvert));

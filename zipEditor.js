@@ -25,6 +25,7 @@ let imgctx;
 let fill_tolerance = 100;
 let fill_glow = 0.25;
 let fill_boundaries = {x: 0, y: 0, w: 0, h: 0};
+let effect_parameters;
 const pixelcvs = document.createElement('canvas');
 pixelcvs.width = 1;
 pixelcvs.height = 1;
@@ -41,6 +42,23 @@ function zipEditorInit() {
 		<div class="loading" style="display:none;">
 			<h1>Please wait...</h1>
 			<h2>This may take a few seconds.</h2>
+		</div>
+		<div class="effects" style="display:none;">
+			<div class="window">
+				<div class="closebutton" onclick="closeEffect()">
+					<svg height="50" width="50">
+						<line x1="10" y1="10" x2="40" y2="40" style="stroke:#FFF; stroke-width:5; stroke-linecap:round" />
+						<line x1="10" y1="40" x2="40" y2="10" style="stroke:#FFF; stroke-width:5; stroke-linecap:round" />
+					</svg>
+				</div>
+				<h1 class="title"></h1>
+				<div class="inputs">
+				</div>
+				<canvas class="preview" width="1" height="1"></canvas>
+				<canvas class="previewafter" width="1" height="1"></canvas>
+				<hr>
+				<button class="apply" onclick="applyEffectAndClose()">Apply</button>
+			</div>
 		</div>
 		<div class="topbar">
 			<button class="button" onclick="zipEditorImport()">Import</button>
@@ -86,13 +104,17 @@ function zipEditorInit() {
 					</div>
 				</div>
 				<div class="window" style="left:410px;top:350px" onmousedown="startWindowDrag(this);">
-					<p>Tools</p>
-					<div class="contents">
-						<button class="pencil selectedtool" onclick="selectTool('Pencil')"></button>
-						<button class="eraser" onclick="selectTool('Eraser')"></button>
-						<button class="eyedropper" onclick="selectTool('Eyedropper')"></button>
-						<button class="selection" onclick="selectTool('Selection')"></button>
-						<button class="fill" onclick="selectTool('Fill')"></button>
+					<p>Toolbox</p>
+					<div class="contents" style="text-align:center;">
+						<button class="squarebutton pencil selectedtool" onclick="selectTool('Pencil')"></button>
+						<button class="squarebutton eraser" onclick="selectTool('Eraser')"></button>
+						<button class="squarebutton eyedropper" onclick="selectTool('Eyedropper')"></button>
+						<button class="squarebutton selection" onclick="selectTool('Selection')"></button>
+						<button class="squarebutton fill" onclick="selectTool('Fill')"></button>
+					</div>
+					<p>Extras</p>
+					<div class="contents" style="">
+						<button class="effectsbutton" onclick="openEffect(0)">Hue & Saturation</button>
 					</div>
 				</div>
 				<div class="canvascontainer" onmousemove="canvasActionMove()" onmousedown="canvasActionDown()" onmouseup="canvasActionUp()" oncontextmenu="event.preventDefault()">
@@ -842,4 +864,103 @@ function toggleFolder(elem) {
 			elem.style.height = "30px";
 		}
 	}
+}
+
+function openEffect(type) {
+	const effects = document.querySelector('.ze .effects')
+	effects.style.display = 'block';
+	const title = document.querySelector('.ze .effects .window .title')
+	const preview = document.querySelector('.ze .effects .window .preview')
+	const previewafter = document.querySelector('.ze .effects .window .previewafter')
+	preview.width = imgcanvas.width;
+	previewafter.width = imgcanvas.width;
+	preview.height = imgcanvas.height;
+	previewafter.height = imgcanvas.height;
+	const previewctx = preview.getContext('2d');
+	previewctx.drawImage(imgcanvas, 0, 0)
+	const previewafterctx = previewafter.getContext('2d');
+	previewafterctx.drawImage(imgcanvas, 0, 0)
+	const inputs = document.querySelector('.ze .effects .window .inputs')
+	switch (type) {
+		case 0:
+			title.innerText = "Hue & Saturation";
+			effect_parameters = [0,50,0];
+			inputs.innerHTML = `
+			<p>Hue (<span>0</span>)</p>
+			<input type="range" min="-180" max="180" value="0" style="width:100%;" oninput="updateEffectValue(0, 0, this.value, false);" onchange="updateEffectValue(0, 0, this.value, true);">
+			<p>Saturation (<span>50</span>)</p>
+			<input type="range" min="0" max="99" value="50" style="width:100%;" oninput="updateEffectValue(1, 0, this.value, false);" onchange="updateEffectValue(1, 0, this.value, true);">
+			<p>Lightness (<span>0</span>)</p>
+			<input type="range" min="-1" max="1" value="0" step="0.01" style="width:100%;" oninput="updateEffectValue(2, 0, this.value, false);" onchange="updateEffectValue(2, 0, this.value, true);">`
+			break;
+	}
+}
+function closeEffect() {
+	const effects = document.querySelector('.ze .effects')
+	effects.style.display = 'none';
+}
+
+function updateEffectValue(index, effect, value, updatePreview) {
+	document.querySelectorAll('.ze .effects .window .inputs span')[index].innerText = value;
+	effect_parameters[index] = parseFloat(value);
+
+	if (updatePreview) {
+		const preview = document.querySelector('.ze .effects .window .preview')
+		const previewctx = preview.getContext('2d');
+		const data = previewctx.getImageData(0, 0, preview.width, preview.height).data;
+		const previewafter = document.querySelector('.ze .effects .window .previewafter')
+		const previewafterctx = previewafter.getContext('2d');
+		previewafterctx.clearRect(0, 0, preview.width, preview.height);
+
+		for (let d = 0; d < data.length; d += 4) {
+			const hsl = rgbToHsl(data[d], data[d + 1], data[d + 2])
+			hsl[0] = (hsl[0] * 360 + effect_parameters[0]) % 360
+			hsl[1] = hsl[1] + effect_parameters[1]
+			hsl[2] = Math.max(0, Math.min(1, hsl[2] + effect_parameters[2]));
+			previewafterctx.globalAlpha = data[d + 3] / 100;
+			previewafterctx.fillStyle = hslToHex(hsl);
+			previewafterctx.fillRect((d / 4) % preview.width, Math.floor(d / 4 / preview.width), 1, 1)
+			previewafterctx.globalAlpha = 1;
+		}
+	}
+}
+
+function applyEffectAndClose() {
+	const previewafter = document.querySelector('.ze .effects .window .previewafter')
+	const previewafterctx = previewafter.getContext('2d');
+	imgctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
+	imgctx.drawImage(previewafter, 0, 0);
+	closeEffect();
+	unsavedChanges();
+	takeImageSnapshot();
+}
+
+function rgbToHsl(r, g, b){
+    r /= 255, g /= 255, b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0;
+    }else{
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h, s, l];
+}
+function hslToHex(hsl) {
+	const a = hsl[1] * Math.min(hsl[2], 1 - hsl[2]) / 100;
+	const f = n => {
+		const k = (n + hsl[0] / 30) % 12;
+		const color = hsl[2] - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+		return Math.round(255 * color).toString(16).padStart(2, '0');   // convert to Hex and prefix "0" if needed
+	};
+	return `#${f(0)}${f(8)}${f(4)}`;
 }
