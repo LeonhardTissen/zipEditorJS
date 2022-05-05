@@ -919,7 +919,7 @@ function updateEffectValue(index, effect, value, updatePreview) {
 			hsl[0] = (hsl[0] * 360 + effect_parameters[0]) % 360
 			hsl[1] = hsl[1] + effect_parameters[1]
 			hsl[2] = Math.max(0, Math.min(1, hsl[2] + effect_parameters[2]));
-			previewafterctx.globalAlpha = data[d + 3] / 100;
+			previewafterctx.globalAlpha = data[d + 3];
 			previewafterctx.fillStyle = hslToHex(hsl);
 			previewafterctx.fillRect((d / 4) % preview.width, Math.floor(d / 4 / preview.width), 1, 1)
 			previewafterctx.globalAlpha = 1;
