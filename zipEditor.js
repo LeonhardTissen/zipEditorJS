@@ -32,10 +32,12 @@ pixelcvs.height = 1;
 const pixelctx = pixelcvs.getContext('2d');
  
 function zipEditorInit() {
-	if (navigator.userAgentData.mobile) {
-		alert("The online .zip editor is not usable on mobile devices");
-		return;
-	}
+	try {
+		if (navigator.userAgentData.mobile) {
+			alert("The online .zip editor is not usable on mobile devices");
+			return;
+		}
+	} catch (err) {}
 	document.body.innerHTML += 
 	`
 	<div class="ze" style="top:100vh" onmouseup="releaseWindows();" onmousemove="moveWindows();">
