@@ -19,6 +19,10 @@ let generated_zip_remaining_images;
 let awaiting_paste;
  
 function zipEditorInit() {
+	if (navigator.userAgentData.mobile) {
+		alert("The online .zip editor is not usable on mobile devices");
+		return;
+	}
 	document.body.innerHTML += 
 	`
 	<div class="ze" style="top:100vh" onmouseup="releaseWindows();" onmousemove="moveWindows();">
@@ -347,20 +351,22 @@ function initializeImageEditor(blob,path) {
 	const imgtempcanvas = document.querySelector('.ze .main .imageedit .canvascontainer .tempcanvas');
 	tempctx = imgtempcanvas.getContext('2d');
 	const image = new Image()
+	image.onload = function() {
+		document.querySelectorAll('.ze .main .imageedit .canvascontainer canvas').forEach((elem) => {
+			elem.width = image.width;
+			elem.height = image.height;
+		})
+		imgcanvascontainer.style.width = image.width + "px";
+		imgcanvascontainer.style.height = image.height + "px";
+		imgcanvascontainer.style.left =  (window.innerWidth + 400) / 2 - image.width / 2 + "px";
+		imgcanvascontainer.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
+		const imgzoom = Math.min(4, imgwindowmaxsize / Math.max(image.width, image.height) / 1.5);
+		imgcanvascontainer.setAttribute('zoom', imgzoom)
+		imgcanvascontainer.style.transform = `scale(${imgzoom})`;
+		ctx.drawImage(image, 0, 0);
+		undo_history = [imgcanvas.toDataURL(0, 0, imgcanvas.width, imgcanvas.height)];
+	}
 	image.src = blob;
-	document.querySelectorAll('.ze .main .imageedit .canvascontainer canvas').forEach((elem) => {
-		elem.width = image.width;
-		elem.height = image.height;
-	})
-	imgcanvascontainer.style.width = image.width + "px";
-	imgcanvascontainer.style.height = image.height + "px";
-	imgcanvascontainer.style.left =  (window.innerWidth + 400) / 2 - image.width / 2 + "px";
-	imgcanvascontainer.style.top = (window.innerHeight) / 2 - image.height / 2 + "px";
-	const imgzoom = Math.min(4, imgwindowmaxsize / Math.max(image.width, image.height) / 1.5);
-	imgcanvascontainer.setAttribute('zoom', imgzoom)
-	imgcanvascontainer.style.transform = `scale(${imgzoom})`;
-	ctx.drawImage(image, 0, 0);
-	undo_history = [imgcanvas.toDataURL(0, 0, imgcanvas.width, imgcanvas.height)];
 }
 
 function zoomCanvas() {
@@ -412,7 +418,6 @@ function copySelectionToClipboard() {
 		tempcvs.height = s.h;
 		tempctx.drawImage(imgcanvas, s.x, s.y, s.w, s.h, 0, 0, s.w, s.h);
 		const dataURL = tempcvs.toDataURL(0, 0, s.w, s.h);
-		console.log(dataURL)
 		navigator.clipboard.writeText(dataURL);
 	}
 }
@@ -422,7 +427,7 @@ function pasteClipboardToCanvas() {
 	const cx = Math.round(cursor.style.left.replace('px',''))
 	const cy = Math.round(cursor.style.top.replace('px',''))
 	try {
-		navigator.clipboard.readText().then(clipText => drawDataOnCanvas(data, cx, cy))
+		navigator.clipboard.readText().then(clipText => drawDataOnCanvas(clipText, cx, cy))
 	} catch (err) {
 		const input = document.createElement('input');
 		awaiting_paste = true;
