@@ -25,7 +25,7 @@ let imgctx;
 let fill_tolerance = 100;
 let fill_glow = 0.25;
 let fill_boundaries = {x: 0, y: 0, w: 0, h: 0};
-let effect_parameters;
+let effect_parameters = [0,50,0];
 const pixelcvs = document.createElement('canvas');
 pixelcvs.width = 1;
 pixelcvs.height = 1;
@@ -886,16 +886,16 @@ function openEffect(type) {
 	switch (type) {
 		case 0:
 			title.innerText = "Hue & Saturation";
-			effect_parameters = [0,50,0];
 			inputs.innerHTML = `
-			<p>Hue (<span>0</span>)</p>
-			<input type="range" min="-180" max="180" value="0" style="width:100%;" oninput="updateEffectValue(0, 0, this.value, false);" onchange="updateEffectValue(0, 0, this.value, true);">
-			<p>Saturation (<span>50</span>)</p>
-			<input type="range" min="0" max="99" value="50" style="width:100%;" oninput="updateEffectValue(1, 0, this.value, false);" onchange="updateEffectValue(1, 0, this.value, true);">
-			<p>Lightness (<span>0</span>)</p>
-			<input type="range" min="-1" max="1" value="0" step="0.01" style="width:100%;" oninput="updateEffectValue(2, 0, this.value, false);" onchange="updateEffectValue(2, 0, this.value, true);">`
+			<p>Hue (<span>${effect_parameters[0]}</span>)</p>
+			<input type="range" min="-180" max="180" value="${effect_parameters[0]}" style="width:100%;" oninput="updateEffectValue(0, 0, this.value, false);" onchange="updateEffectValue(0, 0, this.value, true);">
+			<p>Saturation (<span>${effect_parameters[1]}</span>)</p>
+			<input type="range" min="0" max="99" value="${effect_parameters[1]}" style="width:100%;" oninput="updateEffectValue(1, 0, this.value, false);" onchange="updateEffectValue(1, 0, this.value, true);">
+			<p>Lightness (<span>${effect_parameters[2]}</span>)</p>
+			<input type="range" min="-1" max="1" value="${effect_parameters[2]}" step="0.01" style="width:100%;" oninput="updateEffectValue(2, 0, this.value, false);" onchange="updateEffectValue(2, 0, this.value, true);">`
 			break;
 	}
+	updateEffectPreview();
 }
 function closeEffect() {
 	const effects = document.querySelector('.ze .effects')
@@ -907,23 +907,27 @@ function updateEffectValue(index, effect, value, updatePreview) {
 	effect_parameters[index] = parseFloat(value);
 
 	if (updatePreview) {
-		const preview = document.querySelector('.ze .effects .window .preview')
-		const previewctx = preview.getContext('2d');
-		const data = previewctx.getImageData(0, 0, preview.width, preview.height).data;
-		const previewafter = document.querySelector('.ze .effects .window .previewafter')
-		const previewafterctx = previewafter.getContext('2d');
-		previewafterctx.clearRect(0, 0, preview.width, preview.height);
+		updateEffectPreview()
+	}
+}
 
-		for (let d = 0; d < data.length; d += 4) {
-			const hsl = rgbToHsl(data[d], data[d + 1], data[d + 2])
-			hsl[0] = (hsl[0] * 360 + effect_parameters[0]) % 360
-			hsl[1] = hsl[1] + effect_parameters[1]
-			hsl[2] = Math.max(0, Math.min(1, hsl[2] + effect_parameters[2]));
-			previewafterctx.globalAlpha = data[d + 3] / 255;
-			previewafterctx.fillStyle = hslToHex(hsl);
-			previewafterctx.fillRect((d / 4) % preview.width, Math.floor(d / 4 / preview.width), 1, 1)
-			previewafterctx.globalAlpha = 1;
-		}
+function updateEffectPreview() {
+	const preview = document.querySelector('.ze .effects .window .preview')
+	const previewctx = preview.getContext('2d');
+	const data = previewctx.getImageData(0, 0, preview.width, preview.height).data;
+	const previewafter = document.querySelector('.ze .effects .window .previewafter')
+	const previewafterctx = previewafter.getContext('2d');
+	previewafterctx.clearRect(0, 0, preview.width, preview.height);
+
+	for (let d = 0; d < data.length; d += 4) {
+		const hsl = rgbToHsl(data[d], data[d + 1], data[d + 2])
+		hsl[0] = (hsl[0] * 360 + effect_parameters[0]) % 360
+		hsl[1] = hsl[1] + effect_parameters[1]
+		hsl[2] = Math.max(0, Math.min(1, hsl[2] + effect_parameters[2]));
+		previewafterctx.globalAlpha = data[d + 3] / 255;
+		previewafterctx.fillStyle = hslToHex(hsl);
+		previewafterctx.fillRect((d / 4) % preview.width, Math.floor(d / 4 / preview.width), 1, 1)
+		previewafterctx.globalAlpha = 1;
 	}
 }
 
