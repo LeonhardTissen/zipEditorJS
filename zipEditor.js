@@ -39,8 +39,8 @@ function zipEditorInit() {
 		}
 	} catch (err) {}
 	document.body.innerHTML += 
-	`
-	<div class="ze" style="top:100vh" onmouseup="releaseWindows();" onmousemove="moveWindows();">
+	/* html */`
+	<div class="ze" onmouseup="releaseWindows();" onmousemove="moveWindows();">
 		<div class="loading" style="display:none;">
 			<h1>Please wait...</h1>
 			<h2>This may take a few seconds.</h2>
@@ -67,12 +67,6 @@ function zipEditorInit() {
 			<button class="button" onclick="zipEditorExport()">Export</button>
 			<div class="darkbutton" onclick="toggleTheme()">
 				<svg viewBox="0 0 512 512"><path fill="white" d="M283.211 512c78.962 0 151.079-35.925 198.857-94.792 7.068-8.708-.639-21.43-11.562-19.35-124.203 23.654-238.262-71.576-238.262-196.954 0-72.222 38.662-138.635 101.498-174.394 9.686-5.512 7.25-20.197-3.756-22.23A258.156 258.156 0 0 0 283.211 0c-141.309 0-256 114.511-256 256 0 141.309 114.511 256 256 256z"/></svg>
-			</div>
-			<div class="closebutton" onclick="zipEditorClose()">
-				<svg height="50" width="50">
-					<line x1="10" y1="10" x2="40" y2="40" style="stroke:#FFF; stroke-width:5; stroke-linecap:round" />
-					<line x1="10" y1="40" x2="40" y2="10" style="stroke:#FFF; stroke-width:5; stroke-linecap:round" />
-				</svg>
 			</div>
 		</div>
 		<div class="main">
@@ -139,9 +133,6 @@ function zipEditorInit() {
 	imgcanvas = document.querySelector('.ze .main .imageedit canvas');
 	imgctx = imgcanvas.getContext('2d');
 	imgcanvascontainer = document.querySelector('.ze .main .imageedit .canvascontainer');
-	setTimeout(function() {
-		document.querySelector('.ze').style.top = 0;
-	}, 1)
 }
 
 function toggleTheme() {
@@ -281,13 +272,6 @@ function zipEditorAddLoading() {
 			document.querySelector('.ze .loading').style.display = 'none'
 		});
 	}
-}
-
-function zipEditorClose() {
-	document.querySelector('.ze').style.top = "100vh"
-	setTimeout(function() {
-		document.querySelector('.ze').remove();
-	}, 500)
 }
 
 function zipEditorImportZip() {
