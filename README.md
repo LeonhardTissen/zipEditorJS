@@ -1,4 +1,4 @@
-# Highly WIP
+# zipEditorJS
 
 ### With this library
 - You can give users a way to edit .zip files from within their browser
