@@ -7,7 +7,7 @@ let current_tool = "Pencil";
 let current_tool_size = 1;
 let current_tool_color = "#000000";
 let current_tool_alpha = 1;
-let current_tool_secondary_color = "#FFFFFF"
+let current_tool_secondary_color = "#FFFFFF";
 let current_tool_buffer = [];
 let current_selection;
 let current_view_type;
@@ -37,7 +37,7 @@ function zipEditorInit() {
 			alert("The online .zip editor is not usable on mobile devices");
 			return;
 		}
-	} catch (err) {}
+	} catch (_) {}
 	document.body.innerHTML += 
 	/* html */`
 	<div class="ze" onmouseup="releaseWindows();" onmousemove="moveWindows();">
@@ -136,19 +136,19 @@ function zipEditorInit() {
 }
 
 function toggleTheme() {
-	var old_theme = document.documentElement.getAttribute('theme')
-	var new_theme = (old_theme == 'dark' ? 'main' : 'dark')
+	var old_theme = document.documentElement.getAttribute('theme');
+	var new_theme = (old_theme == 'dark' ? 'main' : 'dark');
 	document.documentElement.setAttribute('theme', new_theme);
-	localStorage.setItem('jwbpTheme', new_theme)
-	document.querySelector('.ze .topbar .darkbutton')
+	localStorage.setItem('jwbpTheme', new_theme);
+	document.querySelector('.ze .topbar .darkbutton');
 }
 
 document.documentElement.setAttribute('theme', 'main');
 if (localStorage.getItem('jwbpTheme') == 'dark') {
-	toggleTheme()
+	toggleTheme();
 }
 
-function keyDown() {
+function keyDown(event) {
 	switch (event.key) {
 		case "1":
 			selectTool('Pencil');
@@ -203,7 +203,7 @@ function keyDown() {
 			break;
 	}
 }
-function keyUp() {
+function keyUp(event) {
 	switch (event.key) {
 		case " ":
 			buttons_held.delete(event.key);
@@ -223,17 +223,17 @@ function startWindowDrag(elem) {
 function releaseWindows() {
 	document.querySelectorAll('.dragged').forEach(elem => elem.classList.remove('dragged'))
 }
-function moveWindows() {
+function moveWindows(event) {
 	const draggedWindow = document.querySelector('.dragged')
 	if (draggedWindow !== null) {
-		draggedWindow.style.left = adjustPxString(draggedWindow.style.left, event.movementX)
-		draggedWindow.style.top = adjustPxString(draggedWindow.style.top, event.movementY)
+		draggedWindow.style.left = adjustPxString(draggedWindow.style.left, event.movementX);
+		draggedWindow.style.top = adjustPxString(draggedWindow.style.top, event.movementY);
 	}
 }
 
 function toggleSidebar() {
-	const sidebar = document.querySelector('.ze .sidebar')
-	const sidebarbutton = document.querySelector('.ze .sidebarbutton')
+	const sidebar = document.querySelector('.ze .sidebar');
+	const sidebarbutton = document.querySelector('.ze .sidebarbutton');
 	if (sidebar.style.transform === "translateX(-350px)") {
 		sidebar.style.transform = ""
 		sidebarbutton.style.transform = "";
@@ -247,18 +247,18 @@ function zipEditorImport() {
 	document.querySelector('.ze #zipinput').click();
 }
 function zipEditorExport() {
-	document.querySelector('.ze .loading').style.display = 'block'
+	document.querySelector('.ze .loading').style.display = 'block';
 	generated_zip = new JSZip();
 	generated_zip_remaining_images = Object.keys(loaded_images).length;
 	for (let [key, value] of Object.entries(loaded_text_files)) {
-    	generated_zip.file(key, value)
+    	generated_zip.file(key, value);
 	}
 	for (let [key, value] of Object.entries(loaded_images)) {
-    	const file = fetch(value)
+    	fetch(value)
     	.then(r => r.blob())
     	.then(blobFile => new File([blobFile], key.split("/")[key.split("/").length-1], { type: "image/png" }))
     	.then((blobFile) => {
-    		generated_zip.file(key, blobFile)
+    		generated_zip.file(key, blobFile);
     		zipEditorAddLoading();
     	})
 	}
@@ -269,31 +269,31 @@ function zipEditorAddLoading() {
 		generated_zip.generateAsync({type:"blob"})
 		.then((content) => {
 			saveAs(content, loaded_zip_name);
-			document.querySelector('.ze .loading').style.display = 'none'
+			document.querySelector('.ze .loading').style.display = 'none';
 		});
 	}
 }
 
-function zipEditorImportZip() {
+function zipEditorImportZip(event) {
 	current_view_type = undefined;
-	closeAllTools()
+	closeAllTools();
 	const files = event.dataTransfer ? event.dataTransfer.files : event.target.files;
 	for (let i = 0, f; f = files[i]; i++) {
 		const loadedZip = new JSZip();
 		loaded_zip_name = f.name;
-		loaded_text_files = {}
-		loaded_images = {}
+		loaded_text_files = {};
+		loaded_images = {};
 		document.querySelector('.sidebar').innerHTML = '';
 		loadedZip.loadAsync(f).then(function (zip) {
 			const folders = new Set();
-			for (const [key, value] of Object.entries(zip.files)) {
-				const itemPath = key.split("/")
+			Object.keys(zip.files).forEach((key) => {
+				const itemPath = key.split("/");
 				if (itemPath[0] !== "__MACOSX") {
 					for (let i = 1; i < itemPath.length; i ++) {
 						folders.add(itemPath.slice(0, i).join("/"))
 					};
 				};
-			};
+			});
 			const sortedFilePaths = Array.from(folders).sort()
 			for (let p = 0; p < sortedFilePaths.length; p ++) {
 				const item = sortedFilePaths[p];
@@ -314,8 +314,8 @@ function zipEditorImportZip() {
 				</div>
 				`
 			}
-			for (const [key, value] of Object.entries(zip.files)) {
-				const itemPath = key.split("/")
+			Object.keys(zip.files).forEach((key) => {
+				const itemPath = key.split("/");
 				if (itemPath[0] !== "__MACOSX") {
 					const temp = itemPath[itemPath.length - 1].split(".");
 					itemExtension = temp[temp.length-1]
@@ -356,15 +356,15 @@ function zipEditorImportZip() {
 						})
 					}
 				}
-			};
+			});
 		}, function () {
-			alert("Not a valid zip file")
+			alert("Not a valid zip file");
 		});
 	}
 }
 
 function checkIfSaved() {
-	return !(unsaved_changes_warning && !confirm("You have unsaved, proceed anyway?"))
+	return !(unsaved_changes_warning && !confirm("You have unsaved changes, proceed anyway?"))
 }
 
 function initializeImageEditor(blob,path) {
@@ -374,19 +374,19 @@ function initializeImageEditor(blob,path) {
 	const imgwindow = document.querySelector('.ze .main .imageedit');
 	imgwindow.style.display = 'block';
 	imgwindow.setAttribute('path', path);
-	imgwindowrect = imgwindow.getBoundingClientRect()
-	imgwindowmaxsize = Math.min(imgwindowrect.width, imgwindowrect.height)
+	const imgwindowrect = imgwindow.getBoundingClientRect();
+	imgwindowmaxsize = Math.min(imgwindowrect.width, imgwindowrect.height);
 	const imgname = document.querySelector('.ze .main .filepathname');
 	imgname.innerText = path;
 	ctx = imgcanvas.getContext('2d');
 	const imgtempcanvas = document.querySelector('.ze .main .imageedit .canvascontainer .tempcanvas');
 	tempctx = imgtempcanvas.getContext('2d');
-	const image = new Image()
+	const image = new Image();
 	image.onload = function() {
 		document.querySelectorAll('.ze .main .imageedit .canvascontainer canvas').forEach((elem) => {
 			elem.width = image.width;
 			elem.height = image.height;
-		})
+		});
 		imgcanvascontainer.style.width = image.width + "px";
 		imgcanvascontainer.style.height = image.height + "px";
 		imgcanvascontainer.style.left =  (window.innerWidth + 400) / 2 - image.width / 2 + "px";
@@ -400,12 +400,12 @@ function initializeImageEditor(blob,path) {
 	image.src = blob;
 }
 
-function zoomCanvas() {
-	const oldzoom = imgcanvascontainer.getAttribute('zoom')
+function zoomCanvas(event) {
+	const oldzoom = imgcanvascontainer.getAttribute('zoom');
 	const zoomfactor = (event.deltaY < 0 ? 1.1 : 0.9090909);
 	const newzoom = Math.min(15, Math.max(0.1, oldzoom * zoomfactor));
 	imgcanvascontainer.style.transform = `scale(${newzoom})`;
-	imgcanvascontainer.setAttribute('zoom', newzoom)
+	imgcanvascontainer.setAttribute('zoom', newzoom);
 }
 
 function moveCanvas() {
@@ -421,17 +421,17 @@ function selectEntireCanvas() {
 	selectionbox.style.left = "0px";
 	selectionbox.style.top = "0px";
 	selectionbox.style.width = imgcanvas.width + "px";
-	selectionbox.style.height = imgcanvas.height + "px"
-	selectionbox.setAttribute('x', 0)
-	selectionbox.setAttribute('y', 0)
-	selectionbox.classList.add('selection')
-	current_selection = {type: "rect", x: 0, y: 0, w: imgcanvas.width, h: imgcanvas.height}
+	selectionbox.style.height = imgcanvas.height + "px";
+	selectionbox.setAttribute('x', 0);
+	selectionbox.setAttribute('y', 0);
+	selectionbox.classList.add('selection');
+	current_selection = {type: "rect", x: 0, y: 0, w: imgcanvas.width, h: imgcanvas.height};
 	imgcanvascontainer.appendChild(selectionbox);
 }
 function deleteSelection() {
 	const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 	if (selectionbox) {
-		selectionbox.remove()
+		selectionbox.remove();
 		current_selection = undefined;
 	}
 }
@@ -450,8 +450,8 @@ function copySelectionToClipboard() {
 function pasteClipboardToCanvas() {
 	if (awaiting_paste) return;
 	const cursor = document.querySelector('.ze .main .imageedit .canvascontainer .cursor');
-	const cx = Math.round(cursor.style.left.replace('px',''))
-	const cy = Math.round(cursor.style.top.replace('px',''))
+	const cx = Math.round(cursor.style.left.replace('px',''));
+	const cy = Math.round(cursor.style.top.replace('px',''));
 	try {
 		navigator.clipboard.readText().then(clipText => drawDataOnCanvas(clipText, cx, cy))
 	} catch (err) {
@@ -477,8 +477,8 @@ function pasteClipboardToCanvas() {
 function drawDataOnCanvas(data, x, y) {
 	const tempimg = document.createElement('img');
 	tempimg.src = data;
-	imgctx.clearRect(x, y, tempimg.width, tempimg.height)
-	imgctx.drawImage(tempimg, x, y)
+	imgctx.clearRect(x, y, tempimg.width, tempimg.height);
+	imgctx.drawImage(tempimg, x, y);
 	takeImageSnapshot();
 }
 
@@ -496,7 +496,7 @@ function canvasActionUp() {
 			case "Selection":
 				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 				if (oldselectionbox && (oldselectionbox.style.width == "0px" || oldselectionbox.style.height == "0px")) {
-					deleteSelection()
+					deleteSelection();
 				}
 				break;
 		}
@@ -520,7 +520,7 @@ function canvasActionDown() {
 				if (event.which === 1 || event.which === 3) {
 					const ctx = imgcanvas.getContext('2d');
 					ctx.save();
-					ctx.beginPath()
+					ctx.beginPath();
 					ctx.arc(x, y, current_tool_size / 2, 0, Math.PI * 2);
 					ctx.clip();
 					ctx.globalAlpha = current_tool_alpha;
@@ -531,25 +531,24 @@ function canvasActionDown() {
 				break;
 			case "Eyedropper":
 				if (event.which === 1 || event.which === 3) {
-					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1)
+					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1);
 					const p = pixelctx.getImageData(0,0,1,1).data;
 					changeToolColor(rgbToHex(p), (event.which === 3))
-					changeToolAlpha(p[3] / 255)
+					changeToolAlpha(p[3] / 255);
 				}
 				break;
 			case "Selection":
-				const oldselectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 				if (current_selection) {
 					deleteSelection()
 				}
 				if (event.which === 1 || event.which === 3) {
-					const selectionbox = document.createElement('div')
+					const selectionbox = document.createElement('div');
 					selectionbox.style.left = Math.round(x) + "px";
 					selectionbox.style.top = Math.round(y) + "px";
 					selectionbox.style.width = "0px";
-					selectionbox.style.height = "0px"
-					selectionbox.setAttribute('x', x)
-					selectionbox.setAttribute('y', y)
+					selectionbox.style.height = "0px";
+					selectionbox.setAttribute('x', x);
+					selectionbox.setAttribute('y', y);
 					selectionbox.classList.add('selection')
 					current_selection = {type: "rect", x: Math.round(x), y: Math.round(y), w: 0, h: 0}
 					imgcanvascontainer.appendChild(selectionbox);
@@ -562,7 +561,7 @@ function canvasActionDown() {
 				var waiting_for_snapshot = setInterval(function() {
 					if (checked_pixels.size == last_pixel_amt) {
 						takeImageSnapshot();
-						clearInterval(waiting_for_snapshot)
+						clearInterval(waiting_for_snapshot);
 					}
 					last_pixel_amt = checked_pixels.size;
 				}, 10)
@@ -573,7 +572,7 @@ function canvasActionDown() {
 
 function startAtPixel(x, y) {
 	checked_pixels = new Set();
-	checked_pixels.add(x+','+y)
+	checked_pixels.add(x+','+y);
 	if (current_selection) {
 		fill_boundaries.x = current_selection.x;
 		fill_boundaries.y = current_selection.y;
@@ -585,12 +584,12 @@ function startAtPixel(x, y) {
 		fill_boundaries.w = imgcanvas.width;
 		fill_boundaries.h = imgcanvas.height;
 	}
-	pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1)
+	pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1);
 	original_pixel_values = pixelctx.getImageData(0,0,1,1).data;
 	imgctx.globalAlpha = current_tool_alpha;
-	imgctx.fillRect(x, y, 1, 1)
+	imgctx.fillRect(x, y, 1, 1);
 	imgctx.globalAlpha = 1;
-	checkNeighbouring(x, y)
+	checkNeighbouring(x, y);
 }
 function checkNeighbouring(x, y) {
 	const neighbours = [[-1, 0],[1, 0],[0, 1],[0, -1]];
@@ -599,8 +598,8 @@ function checkNeighbouring(x, y) {
 		const nx = x + neighbours[n][0];
 		const ny = y + neighbours[n][1];
 		if (!checked_pixels.has(nx+','+ny) && nx >= f.x && ny >= f.y && nx < f.w && ny < f.h) {
-			checked_pixels.add(nx+','+ny)
-			pixelctx.drawImage(imgcanvas, Math.round(nx), Math.round(ny), 1, 1, 0, 0, 1, 1)
+			checked_pixels.add(nx+','+ny);
+			pixelctx.drawImage(imgcanvas, Math.round(nx), Math.round(ny), 1, 1, 0, 0, 1, 1);
 			const this_pixel_values = pixelctx.getImageData(0,0,1,1).data;
 			let diff = 0;
 			for (var i = 0; i < 4; i ++) {
@@ -611,11 +610,11 @@ function checkNeighbouring(x, y) {
 				imgctx.fillRect(nx, ny, 1, 1)
 				setTimeout(function() {
 					checkNeighbouring(nx, ny)
-				}, 1)
+				}, 1);
 				imgctx.globalAlpha = 1;
 			} else {
 				imgctx.globalAlpha = fill_glow * current_tool_alpha;
-				imgctx.fillRect(nx, ny, 1, 1)
+				imgctx.fillRect(nx, ny, 1, 1);
 				imgctx.globalAlpha = 1;
 			}
 		}
@@ -623,8 +622,8 @@ function checkNeighbouring(x, y) {
 }
 
 function canvasActionMove() {
-	const rect = imgcanvas.getBoundingClientRect()
-	const zoom = imgcanvascontainer.getAttribute('zoom')
+	const rect = imgcanvas.getBoundingClientRect();
+	const zoom = imgcanvascontainer.getAttribute('zoom');
 	const x = (event.clientX - rect.left) / zoom;
 	const y = (event.clientY - rect.top) / zoom;
 	const cursor = document.querySelector('.ze .main .imageedit .canvascontainer .cursor');
@@ -637,32 +636,32 @@ function canvasActionMove() {
 			case "Pencil":
 				if (event.buttons === 1 || event.buttons === 2) {
 					current_tool_buffer.push([x, y]);
-					const secondary = (event.buttons === 2)
-					drawBuffer(true, secondary)
+					const secondary = (event.buttons === 2);
+					drawBuffer(true, secondary);
 				}
 				break;
 			case "Eraser":
 				if (event.buttons === 1 || event.buttons === 2) {
 					const ctx = imgcanvas.getContext('2d');
-					ctx.save()
-					ctx.beginPath()
+					ctx.save();
+					ctx.beginPath();
 					ctx.arc(x, y, current_tool_size / 2, 0, Math.PI * 2);
-					ctx.clip()
+					ctx.clip();
 					ctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
-					ctx.restore()
+					ctx.restore();
 				}
 				break;
 			case "Eyedropper":
 				if (event.buttons === 1 || event.buttons === 2) {
-					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1)
+					pixelctx.drawImage(imgcanvas, Math.round(x), Math.round(y), 1, 1, 0, 0, 1, 1);
 					const p = pixelctx.getImageData(0,0,1,1).data;
-					changeToolColor(rgbToHex(p), (event.buttons === 2))
-					changeToolAlpha(p[3] / 255)
+					changeToolColor(rgbToHex(p), (event.buttons === 2));
+					changeToolAlpha(p[3] / 255);
 				}
 				break;
 			case "Selection":
 				if (event.which === 1 || event.which === 3) {
-					const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection')
+					const selectionbox = document.querySelector('.ze .main .imageedit .canvascontainer .selection');
 					if (current_selection) {
 						const sx = selectionbox.getAttribute('x')
 						const sy = selectionbox.getAttribute('y')
@@ -691,15 +690,11 @@ function rgbToHex(rgb) {
 
 function selectTool(tool) {
 	current_tool = tool;
-	document.querySelector('.ze .main .imageedit .canvascontainer .cursor').style.display = (["Pencil","Eraser"].includes(tool) ? 'block' : 'none')
+	document.querySelector('.ze .main .imageedit .canvascontainer .cursor').style.display = ["Pencil","Eraser"].includes(tool) ? 'block' : 'none';
 	document.querySelector('.ze .main .imageedit .currenttooltext').innerText = tool;
-	document.querySelector('.ze .main .imageedit .selectedtool').classList.remove('selectedtool')
+	document.querySelector('.ze .main .imageedit .selectedtool').classList.remove('selectedtool');
 	document.querySelector('.ze .main .imageedit .' + tool.toLowerCase()).classList.add('selectedtool');
-	if (tool === "Fill") {
-		document.querySelector('.ze .main .imageedit .fillcontents').style.display = 'block';
-	} else {
-		document.querySelector('.ze .main .imageedit .fillcontents').style.display = 'none';
-	}
+	document.querySelector('.ze .main .imageedit .fillcontents').style.display = tool === 'Fill' ? 'block' : 'none';
 }
 function changeToolColor(value, secondary) {
 	if (!secondary) {
@@ -723,9 +718,9 @@ function changeToolAlpha(value, selfinflicted) {
 }
 
 function drawBuffer(temp, colorSlot) {
-	const context = (temp ? tempctx : ctx)
-	tempctx.clearRect(0, 0, 10000, 10000)
-	context.strokeStyle = (colorSlot ? current_tool_secondary_color : current_tool_color)
+	const context = (temp ? tempctx : ctx);
+	tempctx.clearRect(0, 0, 10000, 10000);
+	context.strokeStyle = (colorSlot ? current_tool_secondary_color : current_tool_color);
 	context.globalAlpha = current_tool_alpha;
 	if (current_selection) {
 		context.save();
@@ -736,14 +731,14 @@ function drawBuffer(temp, colorSlot) {
 	context.beginPath();
 	context.lineCap = "round";
 	context.lineJoin = "round";
-	context.moveTo(current_tool_buffer[0][0],current_tool_buffer[0][1])
+	context.moveTo(current_tool_buffer[0][0],current_tool_buffer[0][1]);
 	for (var i = 1; i < current_tool_buffer.length; i ++) {
-		context.lineTo(current_tool_buffer[i][0],current_tool_buffer[i][1])
+		context.lineTo(current_tool_buffer[i][0],current_tool_buffer[i][1]);
 	}
 	context.lineWidth = current_tool_size;
-	context.stroke()
+	context.stroke();
 	if (!temp) {
-		current_tool_buffer = []
+		current_tool_buffer = [];
 	}
 	context.globalAlpha = 1;
 	if (current_selection) {
@@ -751,12 +746,12 @@ function drawBuffer(temp, colorSlot) {
 	}
 }
 function wipeCanvas() {
-	if (current_selection) {
-		const s = current_selection;
-		imgctx.clearRect(s.x, s.y, s.w, s.h);
-		takeImageSnapshot();
-		deleteSelection();
-	}
+	if (!current_selection) return;
+
+	const s = current_selection;
+	imgctx.clearRect(s.x, s.y, s.w, s.h);
+	takeImageSnapshot();
+	deleteSelection();
 }
 
 function takeImageSnapshot() {
@@ -770,7 +765,7 @@ function goBackToLastSnapshot() {
 	const img = new Image();
 	img.onload = function() {
 		imgctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
-		imgctx.drawImage(img, 0, 0)
+		imgctx.drawImage(img, 0, 0);
 	}
 	img.src = data;
 	undo_history.pop();
@@ -814,10 +809,10 @@ function discardChanges() {
 function initializeTextarea(text,path) {
 	discardChanges()
 	current_view_type = "Text";
-	const textwindow = document.querySelector('.ze .main .textedit')
+	const textwindow = document.querySelector('.ze .main .textedit');
 	textwindow.style.display = 'block';
 	textwindow.setAttribute('path', path);
-	const textname = document.querySelector('.ze .main .filepathname')
+	const textname = document.querySelector('.ze .main .filepathname');
 	textname.innerText = path;
 	const textarea = document.querySelector('.ze .main .textedit textarea');
 	textarea.value = text;
@@ -825,12 +820,12 @@ function initializeTextarea(text,path) {
 }
 
 function closeAllTools() {
-	const filepathname = document.querySelector('.ze .main .filepathname')
+	const filepathname = document.querySelector('.ze .main .filepathname');
 	filepathname.innerText = "";
-	discardChanges()
-	const textwindow = document.querySelector('.ze .main .textedit')
+	discardChanges();
+	const textwindow = document.querySelector('.ze .main .textedit');
 	textwindow.style.display = 'none';
-	const imgwindow = document.querySelector('.ze .main .imageedit')
+	const imgwindow = document.querySelector('.ze .main .imageedit');
 	imgwindow.style.display = 'none';
 }
 
@@ -853,30 +848,30 @@ function toggleFolder(elem) {
 }
 
 function openEffect(type) {
-	const effects = document.querySelector('.ze .effects')
+	const effects = document.querySelector('.ze .effects');
 	effects.style.display = 'block';
-	const title = document.querySelector('.ze .effects .window .title')
-	const preview = document.querySelector('.ze .effects .window .preview')
-	const previewafter = document.querySelector('.ze .effects .window .previewafter')
+	const title = document.querySelector('.ze .effects .window .title');
+	const preview = document.querySelector('.ze .effects .window .preview');
+	const previewafter = document.querySelector('.ze .effects .window .previewafter');
 	preview.width = imgcanvas.width;
 	previewafter.width = imgcanvas.width;
 	preview.height = imgcanvas.height;
 	previewafter.height = imgcanvas.height;
 	const previewctx = preview.getContext('2d');
-	previewctx.drawImage(imgcanvas, 0, 0)
+	previewctx.drawImage(imgcanvas, 0, 0);
 	const previewafterctx = previewafter.getContext('2d');
-	previewafterctx.drawImage(imgcanvas, 0, 0)
-	const inputs = document.querySelector('.ze .effects .window .inputs')
+	previewafterctx.drawImage(imgcanvas, 0, 0);
+	const inputs = document.querySelector('.ze .effects .window .inputs');
 	switch (type) {
 		case 0:
 			title.innerText = "Hue & Saturation";
 			inputs.innerHTML = `
 			<p>Hue (<span>${effect_parameters[0]}</span>)</p>
-			<input type="range" min="-180" max="180" value="${effect_parameters[0]}" style="width:100%;" oninput="updateEffectValue(0, 0, this.value, false);" onchange="updateEffectValue(0, 0, this.value, true);">
+			<input type="range" min="-180" max="180" value="${effect_parameters[0]}" style="width:100%;" oninput="updateEffectValue(0, this.value, false);" onchange="updateEffectValue(0, this.value, true);">
 			<p>Saturation (<span>${effect_parameters[1]}</span>)</p>
-			<input type="range" min="0" max="99" value="${effect_parameters[1]}" style="width:100%;" oninput="updateEffectValue(1, 0, this.value, false);" onchange="updateEffectValue(1, 0, this.value, true);">
+			<input type="range" min="0" max="99" value="${effect_parameters[1]}" style="width:100%;" oninput="updateEffectValue(1, this.value, false);" onchange="updateEffectValue(1, this.value, true);">
 			<p>Lightness (<span>${effect_parameters[2]}</span>)</p>
-			<input type="range" min="-1" max="1" value="${effect_parameters[2]}" step="0.01" style="width:100%;" oninput="updateEffectValue(2, 0, this.value, false);" onchange="updateEffectValue(2, 0, this.value, true);">`
+			<input type="range" min="-1" max="1" value="${effect_parameters[2]}" step="0.01" style="width:100%;" oninput="updateEffectValue(2, this.value, false);" onchange="updateEffectValue(2, this.value, true);">`
 			break;
 	}
 	updateEffectPreview();
@@ -886,20 +881,20 @@ function closeEffect() {
 	effects.style.display = 'none';
 }
 
-function updateEffectValue(index, effect, value, updatePreview) {
+function updateEffectValue(index, value, updatePreview) {
 	document.querySelectorAll('.ze .effects .window .inputs span')[index].innerText = value;
 	effect_parameters[index] = parseFloat(value);
 
 	if (updatePreview) {
-		updateEffectPreview()
+		updateEffectPreview();
 	}
 }
 
 function updateEffectPreview() {
-	const preview = document.querySelector('.ze .effects .window .preview')
+	const preview = document.querySelector('.ze .effects .window .preview');
 	const previewctx = preview.getContext('2d');
 	const data = previewctx.getImageData(0, 0, preview.width, preview.height).data;
-	const previewafter = document.querySelector('.ze .effects .window .previewafter')
+	const previewafter = document.querySelector('.ze .effects .window .previewafter');
 	const previewafterctx = previewafter.getContext('2d');
 	previewafterctx.clearRect(0, 0, preview.width, preview.height);
 
@@ -916,8 +911,7 @@ function updateEffectPreview() {
 }
 
 function applyEffectAndClose() {
-	const previewafter = document.querySelector('.ze .effects .window .previewafter')
-	const previewafterctx = previewafter.getContext('2d');
+	const previewafter = document.querySelector('.ze .effects .window .previewafter');
 	imgctx.clearRect(0, 0, imgcanvas.width, imgcanvas.height);
 	imgctx.drawImage(previewafter, 0, 0);
 	closeEffect();
